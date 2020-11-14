@@ -1,15 +1,17 @@
-const http = require("http");
+import http from "http";
 
 import httpMethods from "./constants/httpMethods.js";
-import httpErrors from "./constants/httpErrors";
+import httpErrors from "./constants/httpErrors.js";
 import HttpRequest from "./httpRequest.js";
 import HttpResponse from "./httpResponse.js";
 import HttpClient from "./httpClient.js";
 
-exports.methods = httpMethods;
-exports.errors = httpErrors;
-exports.statusTexts = http.STATUS_CODES;
+export default {
+	methods: httpMethods,
+	errors: httpErrors,
+	statusTexts: http.STATUS_CODES,
 
-exports.request = HttpRequest;
-exports.response = HttpResponse;
-exports.client = HttpClient;
+	request: HttpRequest,
+	response: HttpResponse,
+	client: HttpClient
+}

@@ -1,5 +1,3 @@
-const zlib = require("zlib");
-
 import HttpClientHandler from "./httpClientHandler.js";
 import HttpRequest from "./../httpRequest.js";
 import httpErrors from "../constants/httpErrors.js";

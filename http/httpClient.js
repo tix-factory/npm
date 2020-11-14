@@ -1,5 +1,4 @@
-const cookiejar = require("cookiejar");
-
+import cookiejar from "cookiejar";
 import CompressionHandler from "./handlers/compressionHandler.js";
 import RedirectHandler from "./handlers/redirectHandler.js";
 import CookieHandler from "./handlers/cookieHandler.js";
