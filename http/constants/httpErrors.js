@@ -1,5 +1,6 @@
 export default {
 	"unknown": "unknown",
 	"unrecognizedProtocol": "unrecognizedProtocol",
-	"contentDecodingFailed": "contentDecodingFailed"
+	"contentDecodingFailed": "contentDecodingFailed",
+	"maxRedirects": "maxRedirects"
 };

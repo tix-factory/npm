@@ -1,6 +1,7 @@
 const cookiejar = require("cookiejar");
 
 import CompressionHandler from "./handlers/compressionHandler.js";
+import RedirectHandler from "./handlers/redirectHandler.js";
 import CookieHandler from "./handlers/cookieHandler.js";
 import SendRequestHandler from "./handlers/sendRequestHandler.js";
 
@@ -20,10 +21,16 @@ export default class {
 			options.handlers = [];
 		}
 
+		if (!options.hasOwnProperty("maxRedirects")) {
+			options.maxRedirects = 20;
+		}
+
 		const compressionHandler = new CompressionHandler();
+		const redirectHandler = new RedirectHandler(options);
 		const cookieHandler = new CookieHandler(options.cookiejar || new cookiejar.CookieJar(), options.cookieSaver || blankCookieSaver);
 		const sendRequestHandler = new SendRequestHandler(options);
 
+		options.handlers.push(redirectHandler);
 		options.handlers.push(compressionHandler);
 		options.handlers.push(cookieHandler);
 

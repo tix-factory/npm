@@ -23,9 +23,10 @@ export default class extends HttpClientHandler {
 				const httpResponse = await super.execute(httpRequest);
 
 				let gotCookies = false;
-				httpResponse.headers.forEach(function (header) {
+				httpResponse.headers.forEach((header) => {
 					if (header.name.toLowerCase() === "set-cookie") {
-						this._cookiejar.setCookie(header.value, url.hostname, url.pathname);
+						this._cookiejar.setCookie(header.value, httpRequest.url.hostname, httpRequest.url.pathname);
+						gotCookies = true;
 					}
 				});
 
