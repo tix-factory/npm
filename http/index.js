@@ -14,4 +14,4 @@ export default {
 	request: HttpRequest,
 	response: HttpResponse,
 	client: HttpClient
-}
+};

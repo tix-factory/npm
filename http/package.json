@@ -5,7 +5,6 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "build": "webpack --config webpack.config.js"
   },
   "repository": {
     "type": "git",
