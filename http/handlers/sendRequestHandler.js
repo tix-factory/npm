@@ -19,7 +19,7 @@ export default class {
 				});
 
 				response.on("end", () => {
-					const httpResponse = new HttpResponse(response, Buffer.from(responseBodyChunks));
+					const httpResponse = new HttpResponse(response, Buffer.concat(responseBodyChunks));
 					resolve(httpResponse);
 				});
 			};
@@ -41,9 +41,9 @@ export default class {
 			});
 
 			switch (httpRequest.url.protocol) {
-				case "http":
-				case "https":
-					const request = httpRequest.url.protocol === "http" ? http.request(httpRequest.url, requestOptions, requestStarted) : https.request(httpRequest.url, requestOptions, requestStarted);
+				case "http:":
+				case "https:":
+					const request = httpRequest.url.protocol === "http:" ? http.request(httpRequest.url, requestOptions, requestStarted) : https.request(httpRequest.url, requestOptions, requestStarted);
 					request.on("error", requestError);
 
 					if (httpRequest.body) {

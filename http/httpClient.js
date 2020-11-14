@@ -8,7 +8,7 @@ const blankCookieSaver = (cookiejar) => {};
 
 export default class {
 	constructor(options) {
-		if (typeof (options) !== "object") {
+		if (!options || typeof (options) !== "object") {
 			options = {};
 		}
 
@@ -36,12 +36,14 @@ export default class {
 				handler.setNextHandler(options.handlers[i + 1]);
 			}
 		}
+
+		this.options = options;
 	}
 
 	send(httpRequest) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				const httpResponse = await options.handlers[0].execute(httpRequest);
+				const httpResponse = await this.options.handlers[0].execute(httpRequest);
 				resolve(httpResponse);
 			} catch (e) {
 				reject(e);

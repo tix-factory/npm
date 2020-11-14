@@ -11,6 +11,8 @@ export default class extends HttpClientHandler {
 	execute(httpRequest) {
 		return new Promise(async (resolve, reject) => {
 			try {
+				httpRequest.addOrUpdateHeader("Accept-Encoding", "gzip");
+
 				const httpResponse = await super.execute(httpRequest);
 
 				if (httpResponse.body.length > 0) {

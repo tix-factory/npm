@@ -1,8 +1,10 @@
 export default class {
-	constructor(rawResponse) {
+	constructor(rawResponse, responseBody) {
 		this.raw = rawResponse;
+		this.body = responseBody;
 		this.headers = [];
 		this.headerMap = {};
+		this.statusCode = rawResponse.statusCode;
 
 		for (let i = 0; i < rawResponse.rawHeaders.length; i += 2) {
 			let name = rawResponse.rawHeaders[i];
