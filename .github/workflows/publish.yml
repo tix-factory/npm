@@ -1,4 +1,4 @@
-names: publish
+name: publish
 
 on: push
 
@@ -6,6 +6,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v1
     - name: Builder Number Generator
       uses: einaregilsson/build-number@v3
       with:
