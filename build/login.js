@@ -18,6 +18,6 @@ fs.readFile(npmrcFileName, (err, data) => {
 			return;
 		}
 
-		console.log(npmrcContents);
+		console.log(npmrcContents.replace(npmrcToken, "<npm token>").replace(npmrcEmail, "<npm email>"));
 	});
 });
