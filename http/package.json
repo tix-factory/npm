@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "type": "module",
-  "scripts": {
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/tix-factory/npm.git"
@@ -20,7 +19,7 @@
   },
   "homepage": "https://github.com/tix-factory/npm/blob/main/http",
   "dependencies": {
-    "cookiejar": "^2.1.2"
-  },
-  "devDependencies": {}
+    "cookiejar": "^2.1.2",
+    "tixfactory.queueing": "file:../queueing"
+  }
 }
