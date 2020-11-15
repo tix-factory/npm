@@ -25,5 +25,5 @@ jobs:
     - name: Publish to npm
       # if: ${{ github.ref == 'refs/heads/master' }}
       run: |
-        npm publish ./queueing --access public --dry-run
-        npm publish ./http --access public --dry-run
+        npm publish ./queueing --access public
+        npm publish ./http --access public
