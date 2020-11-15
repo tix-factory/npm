@@ -1,6 +1,6 @@
 import http from "http";
 import HttpRequest from "./httpRequest.js";
-import queueing from "tixfactory.queueing";
+import queueing from "@tix-factory/queueing";
 
 export default class {
 	constructor(options) {

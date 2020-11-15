@@ -1,5 +1,5 @@
 {
-  "name": "tixfactory.http",
+  "name": "@tix-factory/http",
   "version": "2.0.0",
   "description": "",
   "main": "index.js",
@@ -20,6 +20,6 @@
   "homepage": "https://github.com/tix-factory/npm/blob/main/http",
   "dependencies": {
     "cookiejar": "^2.1.2",
-    "tixfactory.queueing": "file:../queueing"
+    "@tix-factory/queueing": "file:../queueing"
   }
 }
