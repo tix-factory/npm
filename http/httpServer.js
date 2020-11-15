@@ -44,30 +44,42 @@ export default class {
 			}
 
 			this.requestQueue.push({
-				request: httpRequest,
+				data: httpRequest,
 				resolve: (httpResponse) => {
-					const headers = [];
+					try {
+						const headers = [];
 
-					httpResponse.addOrUpdateHeader("Content-Length", httpResponse.body ? httpResponse.body.length : 0);
-					httpResponse.headers.forEach(header => {
-						headers.push(header.name);
-						headers.push(header.value);
-					});
+						httpResponse.addOrUpdateHeader("Content-Length", httpResponse.body ? httpResponse.body.length : 0);
+						httpResponse.headers.forEach(header => {
+							headers.push(header.name);
+							headers.push(header.value);
+						});
 
-					response.writeHead(httpResponse.statusCode, headers);
+						response.writeHead(httpResponse.statusCode, headers);
 
-					if (httpResponse.body) {
-						response.write(httpResponse.body);
+						if (httpResponse.body) {
+							response.write(httpResponse.body);
+						}
+
+						response.end();
+					} catch (e) {
+						if (this.options.errorHandler) {
+							this.options.errorHandler(e);
+						}
 					}
-
-					response.end();
 				},
 				reject: err => {
 					if (this.options.errorHandler) {
 						this.options.errorHandler(err);
 					}
-
-					response.end();
+					
+					try {
+						response.end();
+					} catch (e) {
+						if (this.options.errorHandler) {
+							this.options.errorHandler(e);
+						}
+					}
 				}
 			}).then(() => {
 				// Successfully added to request queue
