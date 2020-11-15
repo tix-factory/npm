@@ -21,7 +21,7 @@ jobs:
         node ./build/replaceVersions.js ./http/package.json 2.0.$BUILD_NUMBER
     - name: Login
       run: |
-        node ./build/login.js ./.npmrc $NPM_EMAIL $NPM_PAT
+        node ./build/login.js ./.npmrc ${{ secrets.NPM_EMAIL }} ${{ secrets.NPM_PAT }}
     - name: Publish to npm
       # if: ${{ github.ref == 'refs/heads/master' }}
       run: |
