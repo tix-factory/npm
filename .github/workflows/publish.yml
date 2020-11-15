@@ -1,0 +1,20 @@
+names: publish
+
+on: push
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Builder Number Generator
+      uses: einaregilsson/build-number@v3
+      with:
+        token: ${{ secrets.github_token }}
+    - name: Setup Node
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+    - name: Replace Versions
+      run: |
+        node ./build/replaceVersions.js ./queueing/package.json 2.0.$BUILD_NUMBER
+        node ./build/replaceVersions.js ./http/package.json 2.0.$BUILD_NUMBER
