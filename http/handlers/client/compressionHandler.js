@@ -1,6 +1,6 @@
 import zlib from "zlib";
-import HttpHandler from "./httpHandler.js";
-import httpErrors from "../constants/httpErrors.js";
+import HttpHandler from "./../httpHandler.js";
+import httpErrors from "./../../constants/httpErrors.js";
 
 export default class extends HttpHandler {
 	constructor() {

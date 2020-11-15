@@ -3,6 +3,12 @@ export default class {
 		this.url = url;
 		this.method = httpMethod;
 		this.headers = [];
+		this.headerMap = {};
+		this.body = null;
+	}
+
+	getHeader(headerName) {
+		return this.headerMap[headerName.toLowerCase()];
 	}
 
 	addHeader(name, value) {
@@ -10,6 +16,10 @@ export default class {
 			name: name,
 			value: value
 		});
+
+		if (!this.headerMap.hasOwnProperty(name.toLowerCase())) {
+			this.headerMap[name.toLowerCase()] = value;
+		}
 	}
 
 	addOrUpdateHeader(name, value) {
@@ -18,6 +28,8 @@ export default class {
 			if (header.name.toLowerCase() === name.toLowerCase()) {
 				header.name = name;
 				header.value = value;
+
+				this.headerMap[name.toLowerCase()] = value;
 
 				return;
 			}

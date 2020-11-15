@@ -1,7 +1,7 @@
 import http from "http";
 import https from "https";
-import HttpResponse from "./../httpResponse.js";
-import httpErrors from "../constants/httpErrors.js";
+import HttpResponse from "./../../httpResponse.js";
+import httpErrors from "./../../constants/httpErrors.js";
 
 export default class {
 	constructor(httpClientOptions) {
@@ -18,7 +18,13 @@ export default class {
 				});
 
 				response.on("end", () => {
-					const httpResponse = new HttpResponse(response, Buffer.concat(responseBodyChunks));
+					const httpResponse = new HttpResponse(response.statusCode);
+					httpResponse.body = Buffer.concat(responseBodyChunks);
+
+					for (let i = 0; i < response.rawHeaders.length; i += 2) {
+						httpResponse.addHeader(response.rawHeaders[i], response.rawHeaders[i + 1]);
+					}
+
 					resolve(httpResponse);
 				});
 			};
