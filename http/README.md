@@ -1,9 +1,9 @@
-# tixfactory.http
+# @tix-factory/http
 TODO
 
 ## Example
 ```js
-const http = require("tixfactory.http");
+const http = require("@tix-factory/http");
 const httpClient = new http.client();
 
 const httpRequest = new http.request(http.methods.get, new URL("https://www.roblox.com/users/profile?username=WebGL3D"));
@@ -14,6 +14,7 @@ httpClient.send(httpRequest).then(httpResponse => {
 }).catch(console.error);
 ```
 ```js
+const http = require("@tix-factory/http");
 const httpServer = new http.server({
 	errorHandler: err => {
 		consolee.error("unexpected exception with request", err);

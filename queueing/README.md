@@ -1,2 +1,2 @@
-# tixfactory.queueing
+# @tix-factory/queueing
 TODO
