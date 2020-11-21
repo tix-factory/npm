@@ -102,3 +102,6 @@ dist
 
 # TernJS port file
 .tern-port
+
+# So it doesn't lock the local versions
+package-lock.json
