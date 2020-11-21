@@ -3,14 +3,41 @@ TODO
 
 ## Example
 ```js
-const httpService = require("@tix-factory/http-service");
+import http from "@tix-factory/http";
+import httpService from "@tix-factory/http-service";
 
-const operationRegistry = new httpService.operationRegistry({
-	"exampleException": ""
-});
+class exampleOperation {
+	get allowAnonymous() {
+		return true;
+	}
 
-const httpService = new httpService.server(operationRegistry, {
-	name: "queue-service",
-	logName: "TFQS2.TixFactory.Queue.Service"
+	get name() {
+		return "Example";
+	}
+
+	get route() {
+		return "/v1/Example";
+	}
+
+	get method() {
+		return http.methods.get;
+	}
+
+	execute(httpRequest) {
+		return new Promise((resolve, reject) => {
+			resolve("Hello, world!");
+		});
+	}
+}
+
+const httpClient = new http.client();
+
+const operationRegistry = new httpService.operationRegistry([
+	new exampleOperation()
+]);
+
+const service = new httpService.server(httpClient, operationRegistry, {
+	name: "example-service",
+	logName: "TFES1.TixFactory.Example.Service"
 });
 ```

@@ -38,9 +38,16 @@ export default class extends http.handler {
 
 			const apiKey = httpRequest.getHeader("Tix-Factory-Api-Key");
 			this.getAuthorizedOperations(apiKey).then(authorizedOperations => {
-				resolve(authorizedOperations.includes(operation.name.toLowerCase()));
+				resolve(authorizedOperations.includes(httpRequest.operation.name.toLowerCase()));
 			}).catch(err => {
-				this.logger.error(`Failed to load application authorizations for ApiKey.\n${JSON.stringify(err)}`);
+				let errorStack;
+				if (err instanceof Error) {
+					errorStack = err.stack;
+				} else {
+					errorStack = JSON.stringify(err);
+				}
+
+				this.logger.error(`Failed to load application authorizations for ApiKey.\n${errorStack}`);
 				resolve(false);
 			});
 		});
@@ -91,7 +98,14 @@ export default class extends http.handler {
 				operations: authorizedOperations
 			};
 		}).catch(err => {
-			this.logger.warn(`Failed to refresh application authorizations for ApiKey.\n${JSON.stringify(err)}`);
+			let errorStack;
+			if (err instanceof Error) {
+				errorStack = err.stack;
+			} else {
+				errorStack = JSON.stringify(err);
+			}
+
+			this.logger.warn(`Failed to refresh application authorizations for ApiKey.\n${errorStack}`);
 		});
 	}
 
