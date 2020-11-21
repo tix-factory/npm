@@ -6,6 +6,7 @@ import HttpRequest from "./httpRequest.js";
 import HttpResponse from "./httpResponse.js";
 import HttpClient from "./httpClient.js";
 import HttpServer from "./httpServer.js";
+import HttpHandler from "./handlers/httpHandler.js";
 
 export default {
 	node: http,
@@ -17,5 +18,6 @@ export default {
 	request: HttpRequest,
 	response: HttpResponse,
 	client: HttpClient,
-	server: HttpServer
+	server: HttpServer,
+	handler: HttpHandler
 };

@@ -1,6 +1,6 @@
-import HttpHandler from "@tix-factory/http";
+import http from "@tix-factory/http";
 
-export default class extends HttpHandler {
+export default class extends http.handler {
 	constructor(operationRegistry) {
 		super();
 
@@ -9,7 +9,7 @@ export default class extends HttpHandler {
 
 	execute(httpRequest) {
 		return new Promise((resolve, reject) => {
-			const operation = this.operationRegistry.getByRoute(request.url.pathname);
+			const operation = this.operationRegistry.getByRoute(httpRequest.url.pathname);
 			if (!operation) {
 				const notFoundResponse = new http.response(404);
 				notFoundResponse.addOrUpdateHeader("Content-Type", "application/json");
@@ -19,7 +19,7 @@ export default class extends HttpHandler {
 				return;
 			}
 
-			if (operation.method ? operation.method !== request.method : request.method !== http.methods.post) {
+			if (operation.method ? operation.method !== httpRequest.method : httpRequest.method !== http.methods.post) {
 				const methodNotAllowedResponse = new http.response(405);
 				methodNotAllowedResponse.addOrUpdateHeader("Content-Type", "application/json");
 				methodNotAllowedResponse.body = Buffer.from("{}");

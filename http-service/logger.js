@@ -36,7 +36,9 @@ export default class {
 			}
 		};
 
-		if (typeof(message) === "object" || Array.isArray(message)) {
+		if (message instanceof Error) {
+			logData.message = message.stack || message.toString();
+		} else if (typeof(message) === "object" || Array.isArray(message)) {
 			logData.message = JSON.stringify(message);
 		} else if (typeof(message) === "string") {
 			logData.message = message;

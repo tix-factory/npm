@@ -1,3 +1,5 @@
+import http from "@tix-factory/http";
+
 export default class {
 	constructor() {
 	}
@@ -6,8 +8,8 @@ export default class {
 		return new Promise((resolve, reject) => {
 			try {
 				let requestBody = null;
-				if (request.body && request.body.length > 0) {
-					requestBody = JSON.parse(request.body.toString());
+				if (httpRequest.body && httpRequest.body.length > 0) {
+					requestBody = JSON.parse(httpRequest.body.toString());
 				}
 	
 				httpRequest.operation.execute(requestBody).then((data) => {
@@ -17,7 +19,7 @@ export default class {
 						return;
 					}
 	
-					if (operation.name === "favicon") {
+					if (httpRequest.operation.name === "favicon") {
 						resolve(data);
 						return;
 					}
@@ -26,7 +28,7 @@ export default class {
 						data: data
 					};
 	
-					if (operation.name === "ApplicationMetadata") {
+					if (httpRequest.operation.name === "ApplicationMetadata") {
 						responseBody = data;
 					}
 	
@@ -49,11 +51,7 @@ export default class {
 					}
 				});
 			} catch (e) {
-				const internalServerErrorResponse = new http.response(500);
-				internalServerErrorResponse.addOrUpdateHeader("Content-Type", "application/json");
-				internalServerErrorResponse.body = Buffer.from("{}");
-
-				resolve(internalServerErrorResponse);
+				reject(e);
 			}
 		});
 	}

@@ -1,10 +1,9 @@
 import http from "@tix-factory/http";
-import HttpHandler from "@tix-factory/http";
 import lockAsync from "../lockAsync.js";
 const GuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const CacheExpiryInMilliseconds = 60 * 1000;
 
-export default class extends HttpHandler {
+export default class extends http.handler {
 	constructor(httpClient, logger) {
 		super();
 
