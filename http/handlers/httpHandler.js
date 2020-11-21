@@ -4,14 +4,7 @@ export default class {
 	}
 
 	execute(httpRequest) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const httpResponse = await this._nextHandler.execute(httpRequest);
-				resolve(httpResponse);
-			} catch (e) {
-				reject(e);
-			}
-		});
+		return this._nextHandler.execute(httpRequest);
 	}
 
 	setNextHandler(nextHandler) {

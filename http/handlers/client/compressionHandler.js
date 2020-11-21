@@ -32,9 +32,9 @@ export default class extends HttpHandler {
 
 							return;
 					}
-
-					resolve(httpResponse);
 				}
+
+				resolve(httpResponse);
 			} catch (e) {
 				reject(e)
 			}

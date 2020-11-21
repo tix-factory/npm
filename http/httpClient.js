@@ -47,13 +47,6 @@ export default class {
 	}
 
 	send(httpRequest) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const httpResponse = await this.options.handlers[0].execute(httpRequest);
-				resolve(httpResponse);
-			} catch (e) {
-				reject(e);
-			}
-		});
+		return this.options.handlers[0].execute(httpRequest);
 	}
 }

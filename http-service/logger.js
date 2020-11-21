@@ -50,7 +50,6 @@ export default class {
 
 		this.httpClient.send(httpRequest).then((response) => {
 			if (response.statusCode === 200 || response.statusCode === 204) {
-				console.log("yay, logged", logData)
 				return;
 			}
 

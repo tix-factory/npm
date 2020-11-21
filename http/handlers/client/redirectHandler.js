@@ -31,7 +31,7 @@ export default class extends HttpHandler {
 					}
 
 					httpResponse.url = httpRequest.url;
-
+					
 					resolve(httpResponse);
 					return;
 				} while (redirects <= this._httpClientOptions.maxRedirects);
