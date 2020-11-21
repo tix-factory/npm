@@ -20,10 +20,12 @@ jobs:
       run: |
         node ./build/replaceVersions.js ./queueing/package.json 2.0.$BUILD_NUMBER
         node ./build/replaceVersions.js ./http/package.json 2.0.$BUILD_NUMBER
+        node ./build/replaceVersions.js ./http-service/package.json 2.0.$BUILD_NUMBER
     - name: Publish to npm
       if: ${{ github.ref == 'refs/heads/main' }}
       run: |
         npm publish ./queueing --access public
         npm publish ./http --access public
+        npm publish ./http-service --access public
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_PAT }}
