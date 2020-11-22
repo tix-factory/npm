@@ -10,7 +10,7 @@
     "url": "git+https://github.com/tix-factory/npm.git"
   },
   "keywords": [
-    "http"
+    "mysql"
   ],
   "author": "tix-factory",
   "license": "MIT",
