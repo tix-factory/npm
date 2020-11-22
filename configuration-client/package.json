@@ -1,0 +1,24 @@
+{
+  "name": "@tix-factory/configuration-client",
+  "version": "2.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tix-factory/npm.git"
+  },
+  "keywords": [
+    "configuration"
+  ],
+  "author": "tix-factory",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tix-factory/npm/issues"
+  },
+  "homepage": "https://github.com/tix-factory/npm/blob/main/configuration-client",
+  "dependencies": {
+    "@tix-factory/http": "file:../http"
+  }
+}
