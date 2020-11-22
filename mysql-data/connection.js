@@ -153,8 +153,6 @@ export default class {
 					parameterValuesArray.push(parameterValues[parameterName]);
 				}
 
-				console.log(storedProcedureParameters);
-
 				resolve(parameterValuesArray);
 			}).catch(reject);
 		});
