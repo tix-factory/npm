@@ -55,7 +55,7 @@ export default class extends http.handler {
 
 	getAuthorizedOperations(apiKey) {
 		return new Promise((resolve, reject) => {
-			if (!apiKey || GuidRegex.test(apiKey)) {
+			if (!apiKey || !GuidRegex.test(apiKey)) {
 				resolve([]);
 				return;
 			}
