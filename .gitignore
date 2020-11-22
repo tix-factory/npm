@@ -105,3 +105,6 @@ dist
 
 # So it doesn't lock the local versions
 package-lock.json
+
+# So I can keep files around for testing
+example.js
