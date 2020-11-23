@@ -91,6 +91,7 @@ export default class extends http.handler {
 	}
 
 	refreshAuthorizedOperations(apiKey) {
+		const currentTime = +new Date;
 		this.loadAuthorizationedOperations(apiKey).then(authorizedOperations => {
 			this.cache[apiKey] = {
 				accessExpiry: currentTime + CacheExpiryInMilliseconds,
