@@ -13,7 +13,7 @@ export default class {
 				}
 	
 				httpRequest.operation.execute(requestBody).then((data) => {
-					if (!data) {
+					if (data === undefined) {
 						const noContentResponse = new http.response(204);
 						resolve(noContentResponse);
 						return;
