@@ -4,7 +4,7 @@ import os from "os";
 export default class {
 	constructor(httpClient, loggingServiceHost, logName) {
 		this.httpClient = httpClient;
-		this.loggingServiceEndpoint = new URL(`http://${loggingServiceHost}/v1/Log`);
+		this.loggingServiceEndpoint = new URL(`https://${loggingServiceHost}/v1/Log`);
 		this.hostName = os.hostname();
 		this.logName = logName
 	}

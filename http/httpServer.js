@@ -36,7 +36,7 @@ export default class {
 				return;
 			}
 
-			const httpRequest = new HttpRequest(request.method.toLowerCase(), new URL(`http://${request.headers.host}${request.url}`));
+			const httpRequest = new HttpRequest(request.method.toLowerCase(), new URL(`https://${request.headers.host}${request.url}`));
 			httpRequest.body = Buffer.concat(requestBodyChunks);
 
 			for (let i = 0; i < request.rawHeaders.length; i += 2) {

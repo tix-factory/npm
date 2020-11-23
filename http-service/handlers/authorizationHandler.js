@@ -112,7 +112,7 @@ export default class extends http.handler {
 
 	loadAuthorizationedOperations(apiKey) {
 		return new Promise((resolve, reject) => {
-			const httpRequest = new http.request(http.methods.post, new URL(`http://${process.env.ApplicationAuthorizationServiceHost}/v1/GetAuthorizedOperations`));
+			const httpRequest = new http.request(http.methods.post, new URL(`https://${process.env.ApplicationAuthorizationServiceHost}/v1/GetAuthorizedOperations`));
 			httpRequest.addOrUpdateHeader("Tix-Factory-Api-Key", process.env.ApplicationApiKey);
 			httpRequest.addOrUpdateHeader("Content-Type", "application/json");
 			httpRequest.body = Buffer.from(JSON.stringify({

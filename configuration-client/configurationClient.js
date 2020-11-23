@@ -6,7 +6,7 @@ export default class {
 		this.httpClient = httpClient;
 		this.logger = logger;
 		this.defaultValues = {};
-		this.getApplicationSettingsEndpoint = new URL(`http://${process.env.ConfigurationServiceHost}/v1/GetApplicationSettings`);
+		this.getApplicationSettingsEndpoint = new URL(`https://${process.env.ConfigurationServiceHost}/v1/GetApplicationSettings`);
 		this.cache = null;
 		this.settingsExpiration = 0;
 
