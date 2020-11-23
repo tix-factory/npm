@@ -8,6 +8,6 @@ export default {
 
 	errors: mySqlErrors,
 
-	connectionPool: ConnectionPool,
+	ConnectionPool: ConnectionPool,
 	ConfiguredConnection: ConfiguredConnection
 };
