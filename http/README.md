@@ -21,7 +21,7 @@ const httpServer = new http.server({
 	}
 }, httpRequest => {
 	return new Promise((resolve, reject) => {
-		if (request.data.url.pathname === "/favicon.ico") {
+		if (httpRequest.url.pathname === "/favicon.ico") {
 			const httpResponse = new http.response(404);
 			httpResponse.addHeader("Content-Type", "application/json");
 			httpResponse.body = Buffer.from(JSON.stringify({}));
