@@ -1,80 +1,99 @@
+import express from "express";
 import http from "@tix-factory/http";
 import Logger from "./logger.js";
 import AuthorizationHandler from "./handlers/authorizationHandler.js";
-import OperationSelectionHandler from "./handlers/operationSelectionHandler.js";
-import OperationExecutionHandler from "./handlers/operationExecutionHandler.js";
+import OperationRegistry from "./operationRegistry.js";
 import FaviconOperation from "./operations/faviconOperation.js";
 import ApplicationMetadataOperation from "./operations/applicationMetadataOperation.js";
 
-const buildHandlers = (httpClient, logger, operationRegistry, options) => {
-	const handlers = [
-		new OperationSelectionHandler(operationRegistry)
-	];
+export default class {
+	constructor(options) {
+		if (!options.port) {
+			options.port = 3000;
+		}
 
-	if (options.authorizationHandler) {
-		handlers.push(options.authorizationHandler);
-	} else {
-		handlers.push(new AuthorizationHandler(httpClient, logger));
+		this.options = options;
+		this.httpClient = new http.client();
+		this.logger = new Logger(this.httpClient, process.env.LoggingServiceHost, options.logName);
+		this.authorizationHandler = new AuthorizationHandler(this.httpClient, this.logger);
+		this.app = express();
+		this.operationRegistry = new OperationRegistry(this.registrOperation.bind(this));
+
+		this.app.use(express.json());
+
+		this.operationRegistry.registerOperation(new FaviconOperation(options.faviconFileName || "./favicon.ico"));
+		this.operationRegistry.registerOperation(new ApplicationMetadataOperation(options.name));
 	}
 
-	const operationExecutionHandler = new OperationExecutionHandler();
-
-	for (let i = 0; i < handlers.length; i++) {
-		let handler = handlers[i];
-
-		if (i + 1 === handlers.length) {
-			handler.setNextHandler(operationExecutionHandler);
-		} else {
-			handler.setNextHandler(handlers[i + 1]);
+	registrOperation(operation) {
+		switch (operation.method) {
+			case http.methods.get:
+			case http.methods.post:
+			case http.methods.patch:
+			case http.methods.put:
+			case http.methods.delete:
+			case http.methods.head:
+			case http.methods.options:
+				this.app[operation.method](operation.route, this.handleRequest.bind(this, operation));
+				return;
+			default:
+				throw new Error(`Unrecognized operation method: "${operation.method}"\n\tOperation: "${operation.name}"`);
 		}
 	}
 
-	return handlers;
-};
+	async handleRequest(operation, request, response) {
+		try {
+			const apiKey = request.header("Tix-Factory-Api-Key");
+			const isAuthorized = await this.authorizationHandler.isAuthorized(apiKey, operation);
+			if (isAuthorized) {
+				const result = await operation.execute(request.body);
+				if (result === undefined) {
+					response.status(204);
+				} else {
+					response.status(200);
 
-const registryDefaultOperations = (operationRegistry, options) => {
-	const applicationMetadataOperation = new ApplicationMetadataOperation(options.name);
-	operationRegistry.registerOperation(applicationMetadataOperation);
+					if (operation.contentType) {
+						response.set("Content-Type", operation.contentType);
+					}
 
-	const faviconOperation = new FaviconOperation(options.faviconFileName || "./favicon.ico");
-	operationRegistry.registerOperation(faviconOperation);
-};
-
-export default class {
-	constructor(httpClient, operationRegistry, options) {
-		this.httpClient = httpClient;
-		this.logger = new Logger(this.httpClient, process.env.LoggingServiceHost, options.logName);
-		this.operationRegistry = operationRegistry;
-
-		this.logger.verbose(`Starting ${options.name}...`);
-
-		this.handlers = buildHandlers(httpClient, this.logger, operationRegistry, options);
-
-		this.server = new http.server({
-			errorHandler: this.error.bind(this)
-		}, this.processRequestQueue.bind(this));
-
-		registryDefaultOperations(operationRegistry, options);
-	}
-
-	processRequestQueue(httpRequest) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const httpResponse = await this.handlers[0].execute(httpRequest);
-				resolve(httpResponse);
-			} catch (e) {
-				this.error(e);
-
-				const internalServerError = new http.response(500);
-				internalServerError.addOrUpdateHeader("Content-Type", "application/json");
-				internalServerError.body = Buffer.from("{}");
-
-				resolve(internalServerError);
+					if (operation.rawResult) {
+						response.send(result);
+					} else {
+						response.send({
+							data: result
+						});
+					}
+				}
+			} else {
+				response.status(401);
+				response.send({});
 			}
-		});
+		} catch (e) {
+			if (typeof(e) === "string") {
+				response.status(400);
+				response.send({
+					error: e
+				});
+			} else {
+				response.status(500);
+				response.send({});
+
+				this.logger.error(e);
+			}
+		} finally {
+			response.end();
+		}
 	}
 
-	error(err) {
-		this.logger.error(err);
+	notFoundHandler(request, response, next) {
+		response.status(404).send({});
+	}
+
+	listen() {
+		this.app.use(this.notFoundHandler.bind(this));
+
+		this.app.listen(this.options.port, () => {
+			this.logger.verbose(`${this.options.name} started\n\tPort: ${this.options.port}`);
+		});
 	}
 }

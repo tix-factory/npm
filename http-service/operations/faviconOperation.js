@@ -24,22 +24,20 @@ export default class {
 		return http.methods.get;
 	}
 
-	execute(requestBody) {
-		return new Promise((resolve, reject) => {
-			if (this.faviconBuffer) {
-				const httpResponse = new http.response(200);
-				httpResponse.addOrUpdateHeader("Content-Type", "image/x-icon");
-				httpResponse.body = this.faviconBuffer;
+	get contentType() {
+		return "image/x-icon";
+	}
 
-				resolve(httpResponse);
-			} else {
-				const httpResponse = new http.response(404);
-				httpResponse.addOrUpdateHeader("Content-Type", "application/json");
-				httpResponse.body = Buffer.from("{}");
+	get rawResult() {
+		return true;
+	}
 
-				resolve(httpResponse);
-			}
-		});
+	execute() {
+		if (this.faviconBuffer) {
+			return Promise.resolve(this.faviconBuffer);
+		} else {
+			return Promise.reject("NoFavicon");
+		}
 	}
 
 	loadFavicon() {

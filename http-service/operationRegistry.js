@@ -1,13 +1,14 @@
 export default class {
-	constructor(operationsArray) {
+	constructor(registrationHandler) {
 		this.operations = [];
 		this.operationsByRoute = {};
-
-		operationsArray.forEach(this.registerOperation.bind(this));
+		this.registrationHandler = registrationHandler;
 	}
 
 	registerOperation(operation) {
+		this.operations.push(operation);
 		this.operationsByRoute[operation.route.toLowerCase()] = operation;
+		this.registrationHandler(operation);
 	}
 
 	getByRoute(pathname) {
