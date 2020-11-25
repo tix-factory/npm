@@ -106,7 +106,7 @@ export default class {
 					if (err) {
 						reject(err);
 					} else {
-						resolve(results[1].affectedRows);
+						resolve(results.affectedRows);
 					}
 				});
 			}).catch(reject);
