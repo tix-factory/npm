@@ -1,9 +1,8 @@
 import http from "http";
 import HttpRequest from "./httpRequest.js";
-import queueing from "@tix-factory/queueing";
 
 export default class {
-	constructor(options) {
+	constructor(options, requestHandler) {
 		if (!options || typeof (options) !== "object") {
 			options = {};
 		}
@@ -17,7 +16,7 @@ export default class {
 		}
 
 		this.options = options;
-		this.requestQueue = new queueing.VirtualQueue();
+		this.requestHandler = requestHandler;
 		this.server = http.createServer(this.requestStarted.bind(this));
 
 		this.server.listen(options.port);
@@ -30,7 +29,7 @@ export default class {
 			requestBodyChunks.push(chunk);
 		});
 
-		request.on("end", () => {
+		request.on("end", async () => {
 			if (!request.complete) {
 				// Request disconnected before being fully downloaded.
 				return;
@@ -43,51 +42,29 @@ export default class {
 				httpRequest.addHeader(request.rawHeaders[i], request.rawHeaders[i + 1]);
 			}
 
-			this.requestQueue.push({
-				data: httpRequest,
-				resolve: (httpResponse) => {
-					try {
-						const headers = [];
+			try {
+				const httpResponse = await this.requestHandler(httpRequest);
 
-						httpResponse.addOrUpdateHeader("Content-Length", httpResponse.body ? httpResponse.body.length : 0);
-						httpResponse.headers.forEach(header => {
-							headers.push(header.name);
-							headers.push(header.value);
-						});
+				const headers = [];
 
-						response.writeHead(httpResponse.statusCode, headers);
+				httpResponse.addOrUpdateHeader("Content-Length", httpResponse.body ? httpResponse.body.length : 0);
+				httpResponse.headers.forEach(header => {
+					headers.push(header.name);
+					headers.push(header.value);
+				});
 
-						if (httpResponse.body) {
-							response.write(httpResponse.body);
-						}
+				response.writeHead(httpResponse.statusCode, headers);
 
-						response.end();
-					} catch (e) {
-						if (this.options.errorHandler) {
-							this.options.errorHandler(e);
-						}
-					}
-				},
-				reject: err => {
-					if (this.options.errorHandler) {
-						this.options.errorHandler(err);
-					}
-					
-					try {
-						response.end();
-					} catch (e) {
-						if (this.options.errorHandler) {
-							this.options.errorHandler(e);
-						}
-					}
+				if (httpResponse.body) {
+					response.write(httpResponse.body);
 				}
-			}).then(() => {
-				// Successfully added to request queue
-			}).catch((err) => {
+			} catch (e) {
 				if (this.options.errorHandler) {
-					this.options.errorHandler(err);
+					this.options.errorHandler(e);
 				}
-			});
+			} finally {
+				response.end();
+			}
 		});
 	}
 };

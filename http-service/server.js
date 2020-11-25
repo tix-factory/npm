@@ -1,5 +1,4 @@
 import http from "@tix-factory/http";
-import queueing from "@tix-factory/queueing";
 import Logger from "./logger.js";
 import AuthorizationHandler from "./handlers/authorizationHandler.js";
 import OperationSelectionHandler from "./handlers/operationSelectionHandler.js";
@@ -53,20 +52,16 @@ export default class {
 
 		this.server = new http.server({
 			errorHandler: this.error.bind(this)
-		});
+		}, this.processRequestQueue.bind(this));
 
 		registryDefaultOperations(operationRegistry, options);
-
-		this.requestQueueProcessor = new queueing.QueueProcessor({
-			numberOfThreads: options.numberOfThreads || 512
-		}, this.server.requestQueue, this.processRequestQueue.bind(this));
 	}
 
-	processRequestQueue(request) {
+	processRequestQueue(httpRequest) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				const httpResponse = await this.handlers[0].execute(request.data);
-				request.resolve(httpResponse);
+				const httpResponse = await this.handlers[0].execute(httpRequest);
+				resolve(httpResponse);
 			} catch (e) {
 				this.error(e);
 
@@ -74,9 +69,7 @@ export default class {
 				internalServerError.addOrUpdateHeader("Content-Type", "application/json");
 				internalServerError.body = Buffer.from("{}");
 
-				request.resolve(internalServerError);
-			} finally {
-				resolve(true);
+				resolve(internalServerError);
 			}
 		});
 	}
