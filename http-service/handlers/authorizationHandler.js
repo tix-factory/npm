@@ -1,5 +1,4 @@
 import http from "@tix-factory/http";
-import lockAsync from "../lockAsync.js";
 const GuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const CacheExpiryInMilliseconds = 60 * 1000;
 
@@ -12,34 +11,16 @@ export default class extends http.handler {
 		this.cache = {};
 	}
 
-	execute(httpRequest) {
-		return new Promise((resolve, reject) => {
-			this.authorizeOperation(httpRequest).then(authorized => {
-				if (!authorized) {
-					const unauthorizedResponse = new http.response(401);
-					unauthorizedResponse.addOrUpdateHeader("Content-Type", "application/json");
-					unauthorizedResponse.body = Buffer.from("{}");
-		
-					resolve(unauthorizedResponse);
-					return;
-				}
+	isAuthorized(apiKey, operation) {
+		if (operation.allowAnonymous) {
+			return Promise.resolve(true);
+		}
 
-				super.execute(httpRequest).then(resolve).catch(reject);
-			}).catch(reject);
-		});
-	}
-
-	authorizeOperation(httpRequest) {
-		return new Promise((resolve, reject) => {
-			if (httpRequest.operation.allowAnonymous) {
-				resolve(true);
-				return;
-			}
-
-			const apiKey = httpRequest.getHeader("Tix-Factory-Api-Key");
-			this.getAuthorizedOperations(apiKey).then(authorizedOperations => {
-				resolve(authorizedOperations.includes(httpRequest.operation.name.toLowerCase()));
-			}).catch(err => {
+		return new Promise(async (resolve, reject) => {
+			try {
+				const authorizedOperations = await this.getAuthorizedOperations(apiKey);
+				resolve(authorizedOperations.includes(operation.name.toLowerCase()));
+			} catch (e) {
 				let errorStack;
 				if (err instanceof Error) {
 					errorStack = err.stack;
@@ -48,56 +29,35 @@ export default class extends http.handler {
 				}
 
 				this.logger.error(`Failed to load application authorizations for ApiKey.\n${errorStack}`);
+
 				resolve(false);
-			});
+			}
 		});
 	}
 
 	getAuthorizedOperations(apiKey) {
-		return new Promise((resolve, reject) => {
-			if (!apiKey || !GuidRegex.test(apiKey)) {
-				resolve([]);
-				return;
+		if (!apiKey || !GuidRegex.test(apiKey)) {
+			return Promise.resolve([]);
+		}
+
+		const currentTime = +new Date;
+		let cachedAuthorizations = this.cache[apiKey];
+		if (cachedAuthorizations) {
+			cachedAuthorizations.accessExpiry = currentTime + (CacheExpiryInMilliseconds * 2);
+			if (cachedAuthorizations.refreshExpiry < currentTime) {
+				cachedAuthorizations.refreshExpiry = currentTime + CacheExpiryInMilliseconds;
+				setTimeout(() => this.refreshAuthorizedOperations(apiKey), 0);
 			}
 
-			lockAsync(`AuthorizationHandler:${apiKey}`, (releaseLock) => {
-				const currentTime = +new Date;
-				let cachedAuthorizations = this.cache[apiKey];
-				
-				if (cachedAuthorizations) {
-					cachedAuthorizations.accessExpiry = currentTime + CacheExpiryInMilliseconds;
-					if (cachedAuthorizations.refreshExpiry < currentTime) {
-						cachedAuthorizations.refreshExpiry = currentTime + (CacheExpiryInMilliseconds * 2);
-						setTimeout(() => this.refreshAuthorizedOperations(apiKey), 0);
-					}
+			return Promise.resolve(cachedAuthorizations.operations);
+		}
 
-					releaseLock();
-					resolve(cachedAuthorizations.operations);
-				} else {
-					this.loadAuthorizationedOperations(apiKey).then(authorizedOperations => {
-						this.cache[apiKey] = cachedAuthorizations = {
-							accessExpiry: currentTime + CacheExpiryInMilliseconds,
-							refreshExpiry: currentTime + (CacheExpiryInMilliseconds * 2),
-							operations: authorizedOperations
-						};
-						
-						resolve(authorizedOperations);
-					}).catch(reject).finally(() => {
-						releaseLock();
-					});
-				}
-			});
-		});
+		return this.loadAuthorizationedOperations(apiKey);
 	}
 
 	refreshAuthorizedOperations(apiKey) {
-		const currentTime = +new Date;
-		this.loadAuthorizationedOperations(apiKey).then(authorizedOperations => {
-			this.cache[apiKey] = {
-				accessExpiry: currentTime + CacheExpiryInMilliseconds,
-				refreshExpiry: currentTime + (CacheExpiryInMilliseconds * 2),
-				operations: authorizedOperations
-			};
+		this.loadAuthorizationedOperations(apiKey).then(() => {
+			// Loading the authorizations also cached them.
 		}).catch(err => {
 			let errorStack;
 			if (err instanceof Error) {
@@ -111,18 +71,23 @@ export default class extends http.handler {
 	}
 
 	loadAuthorizationedOperations(apiKey) {
-		return new Promise((resolve, reject) => {
-			const httpRequest = new http.request(http.methods.post, new URL(`https://${process.env.ApplicationAuthorizationServiceHost}/v1/GetAuthorizedOperations`));
-			httpRequest.addOrUpdateHeader("Tix-Factory-Api-Key", process.env.ApplicationApiKey);
-			httpRequest.addOrUpdateHeader("Content-Type", "application/json");
-			httpRequest.body = Buffer.from(JSON.stringify({
-				apiKey: apiKey
-			}));
+		return new Promise(async (resolve, reject) => {
+			try {
+				const httpRequest = new http.request(http.methods.post, new URL(`https://${process.env.ApplicationAuthorizationServiceHost}/v1/GetAuthorizedOperations`));
+				httpRequest.addOrUpdateHeader("Tix-Factory-Api-Key", process.env.ApplicationApiKey);
+				httpRequest.addOrUpdateHeader("Content-Type", "application/json");
+				httpRequest.body = Buffer.from(JSON.stringify({
+					apiKey: apiKey
+				}));
 
-			this.httpClient.send(httpRequest).then(httpResponse => {
+				const httpResponse = await this.httpClient.send(httpRequest);
 				if (httpResponse.statusCode === 200) {
 					const responseBody = JSON.parse(httpResponse.body.toString());
-					resolve(responseBody.data.map(o => o.toLowerCase()));
+					const authorizedOperations = responseBody.data.map(o => o.toLowerCase());
+					
+					this.cacheAuthorizations(apiKey, authorizedOperations);
+
+					resolve(authorizedOperations);
 					return;
 				} else {
 					reject({
@@ -130,7 +95,27 @@ export default class extends http.handler {
 						code: "Unknown"
 					});
 				}
-			}).catch(reject);
+			} catch (e) {
+				reject(e);
+			}
 		});
+	}
+
+	cacheAuthorizations(apiKey, authorizedOperations) {
+		let currentTime = +new Date;
+		this.cache[apiKey] = {
+			accessExpiry: currentTime + (CacheExpiryInMilliseconds * 2),
+			refreshExpiry: currentTime + CacheExpiryInMilliseconds,
+			operations: authorizedOperations
+		};
+
+		setTimeout(() => {
+			const cachedAuthorizations = this.cache[apiKey];
+			let currentTime = +new Date;
+
+			if (cachedAuthorizations && cachedAuthorizations.accessExpiry < currentTime) {
+				delete this.cache[apiKey];
+			}
+		}, CacheExpiryInMilliseconds * 3);
 	}
 }

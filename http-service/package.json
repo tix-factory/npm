@@ -20,6 +20,7 @@
   "homepage": "https://github.com/tix-factory/npm/blob/main/http-service",
   "dependencies": {
     "cookiejar": "^2.1.2",
+    "express": "^4.17.1",
     "@tix-factory/http": "file:../http"
   }
 }

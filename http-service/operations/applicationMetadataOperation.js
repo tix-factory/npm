@@ -23,9 +23,11 @@ export default class {
 		return http.methods.get;
 	}
 
-	execute(requestBody) {
-		return new Promise((resolve, reject) => {
-			resolve(this.applicationMetadata);
-		});
+	get rawResult() {
+		return true;
+	}
+
+	execute() {
+		return Promise.resolve(this.applicationMetadata);
 	}
 };

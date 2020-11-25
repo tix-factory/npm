@@ -8,7 +8,7 @@ import httpService from "@tix-factory/http-service";
 
 class exampleOperation {
 	get allowAnonymous() {
-		return true;
+		return false;
 	}
 
 	get name() {
@@ -20,7 +20,7 @@ class exampleOperation {
 	}
 
 	get method() {
-		return http.methods.get;
+		return http.methods.post;
 	}
 
 	execute(httpRequest) {
@@ -30,14 +30,12 @@ class exampleOperation {
 	}
 }
 
-const httpClient = new http.client();
-
-const operationRegistry = new httpService.operationRegistry([
-	new exampleOperation()
-]);
-
-const service = new httpService.server(httpClient, operationRegistry, {
+const service = new httpService.server({
 	name: "example-service",
 	logName: "TFES1.TixFactory.Example.Service"
 });
+
+service.operationRegistry.registerOperation(new exampleOperation());
+
+service.listen();
 ```
