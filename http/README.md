@@ -19,20 +19,14 @@ const httpServer = new http.server({
 	errorHandler: err => {
 		consolee.error("unexpected exception with request", err);
 	}
-});
-
-const queueProcessor = new queueing.QueueProcessor({
-	numberOfThreads: 3
-}, httpServer.requestQueue, request => {
+}, httpRequest => {
 	return new Promise((resolve, reject) => {
-		//console.log("processing", request.data.url.toString());
-
 		if (request.data.url.pathname === "/favicon.ico") {
 			const httpResponse = new http.response(404);
 			httpResponse.addHeader("Content-Type", "application/json");
 			httpResponse.body = Buffer.from(JSON.stringify({}));
 
-			request.resolve(httpResponse);
+			resolve(httpResponse);
 			return;
 		}
 
@@ -41,9 +35,7 @@ const queueProcessor = new queueing.QueueProcessor({
 			httpResponse.addHeader("Content-Type", "application/json");
 			httpResponse.body = Buffer.from(JSON.stringify({}));
 
-			request.resolve(httpResponse);
-
-			resolve(true);
+			resolve(httpResponse);
 		}, 5 * 1000);
 	});
 });

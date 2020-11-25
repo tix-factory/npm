@@ -19,7 +19,6 @@
   },
   "homepage": "https://github.com/tix-factory/npm/blob/main/http",
   "dependencies": {
-    "cookiejar": "^2.1.2",
-    "@tix-factory/queueing": "file:../queueing"
+    "cookiejar": "^2.1.2"
   }
 }
