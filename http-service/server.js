@@ -46,7 +46,7 @@ export default class {
 			const apiKey = request.header("Tix-Factory-Api-Key");
 			const isAuthorized = await this.authorizationHandler.isAuthorized(apiKey, operation);
 			if (isAuthorized) {
-				const result = await operation.execute(request.body);
+				const result = await operation.execute(operation.method === http.methods.get ? request.params : request.body);
 				if (result === undefined) {
 					response.status(204);
 				} else {
