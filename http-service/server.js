@@ -78,7 +78,18 @@ export default class {
 				response.status(500);
 				response.send({});
 
-				this.logger.error(e);
+				let message = `Unhandled exception in ${operation.name}`;
+				message += `\n\tUrl: (${request.method}) ${request.hostname}${request.originalUrl}\n\n`;
+
+				if (e instanceof Error) {
+					message += e.stack || e.toString();
+				} else if (typeof(e) === "object" || Array.isArray(e)) {
+					message += JSON.stringify(e);
+				} else {
+					message += `${e}`;
+				}
+
+				this.logger.error(message);
 			}
 		} finally {
 			response.end();
