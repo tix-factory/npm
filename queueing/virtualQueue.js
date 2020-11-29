@@ -114,7 +114,7 @@ export default class extends EventEmitter {
 						return;
 					} else {
 						reject({
-							code: queueError.invalidLeaseId
+							code: queueError.invalidLeaseHolder
 						});
 
 						return;
@@ -145,7 +145,7 @@ export default class extends EventEmitter {
 						return;
 					} else {
 						reject({
-							code: queueError.invalidLeaseId
+							code: queueError.invalidLeaseHolder
 						});
 
 						return;

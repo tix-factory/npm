@@ -1,4 +1,5 @@
 export default {
 	"unknown": "unknown",
-	"invalidLeaseId": "invalidLeaseId"
+	"invalidLeaseHolder": "invalidLeaseHolder",
+	"invalidQueueItemData": "invalidQueueItemData"
 };

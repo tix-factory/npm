@@ -30,26 +30,44 @@ export default class {
 		this.processQueue();
 	}
 
-	processQueue() {
+	async processQueue() {
 		if (this._runningThreads >= this.options.numberOfThreads) {
 			return;
 		}
 
 		++this._runningThreads;
 
-		this.queue.lease(this.options.itemLockDurationInMilliseconds).then(async queueItem => {
+		try {
+			const queueItem = await this.queue.lease(this.options.itemLockDurationInMilliseconds);
 			if (!queueItem) {
 				--this._runningThreads;
 				return;
 			}
 
-			try {
-				const result = await this.processItem(queueItem.item);
-				if (result) {
-					this.queue.remove(queueItem.id, queueItem.leaseId).then(() => {
-						// yay it was removed from the queue, cause it was processed yay
+			if (this._runningThreads < this.options.numberOfThreads) {
+				setTimeout(this.processQueue.bind(this), 0);
+			}
+
+			const result = await this.processItem(queueItem.item);
+			if (result) {
+				this.queue.remove(queueItem.id, queueItem.leaseId).then(() => {
+					// yay it was removed from the queue, cause it was processed yay
+				}).catch(err => {
+					if (err.code && err.code.toLowerCase() === queueError.invalidLeaseHolder.toLowerCase()) {
+						return;
+					}
+
+					if (this.options.errorHandler) {
+						this.options.errorHandler(err);
+					}
+				});
+			} else {
+				setTimeout(() => {
+					this.queue.release(queueItem.id, queueItem.leaseId).then(() => {
+						// woo, released!
+						// now something else can take it
 					}).catch(err => {
-						if (err.code === queueError.invalidLeaseId) {
+						if (err.code && err.code.toLowerCase() === queueError.invalidLeaseHolder.toLowerCase()) {
 							return;
 						}
 
@@ -57,32 +75,19 @@ export default class {
 							this.options.errorHandler(err);
 						}
 					});
-				} else {
-					setTimeout(() => {
-						this.queue.release(queueItem.id, queueItem.leaseId).then(() => {
-							// woo, released!
-							// now something else can take it
-						}).catch(err => {
-							if (err.code === queueError.invalidLeaseId) {
-								return;
-							}
-
-							if (this.options.errorHandler) {
-								this.options.errorHandler(err);
-							}
-						});
-					}, this.options.itemRetryDelayInMilliseconds);
-				}
-			} catch (e) {
-				this.options.errorHandler(err);
-			} finally {
-				--this._runningThreads;
+				}, this.options.itemRetryDelayInMilliseconds);
 			}
-		}).catch((err) => {
+
 			--this._runningThreads;
+			this.processQueue();
+		} catch (e) {
+			--this._runningThreads;
+
 			if (this.options.errorHandler) {
 				this.options.errorHandler(err);
 			}
-		});
+
+			this.processQueue();
+		}
 	}
 };
