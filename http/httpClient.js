@@ -24,6 +24,10 @@ export default class {
 			options.maxRedirects = 20;
 		}
 
+		if (!options.hasOwnProperty("requestTimeout")) {
+			options.requestTimeout = 2 * 60 * 1000;
+		}
+
 		const compressionHandler = new CompressionHandler();
 		const redirectHandler = new RedirectHandler(options);
 		const cookieHandler = new CookieHandler(options.cookiejar || new cookiejar.CookieJar(), options.cookieSaver || blankCookieSaver);

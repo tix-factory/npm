@@ -13,7 +13,10 @@ export default class {
 		}
 
 		this.options = options;
-		this.httpClient = new http.client();
+		this.httpClient = new http.client(options.httpClientOptions || {
+			requestTimeout: 10 * 1000
+		});
+		
 		this.logger = new Logger(this.httpClient, process.env.LoggingServiceHost, options.logName);
 		this.authorizationHandler = new AuthorizationHandler(this.httpClient, this.logger);
 		this.app = express();
