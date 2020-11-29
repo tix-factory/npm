@@ -36,9 +36,10 @@ export default class {
 		}
 
 		++this._runningThreads;
+		let queueItem = null;
 
 		try {
-			const queueItem = await this.queue.lease(this.options.itemLockDurationInMilliseconds);
+			queueItem = await this.queue.lease(this.options.itemLockDurationInMilliseconds);
 			if (!queueItem) {
 				--this._runningThreads;
 				return;
@@ -57,9 +58,7 @@ export default class {
 						return;
 					}
 
-					if (this.options.errorHandler) {
-						this.options.errorHandler(err);
-					}
+					this.handleError("removing queue item", queueItem, err);
 				});
 			} else {
 				setTimeout(() => {
@@ -71,9 +70,7 @@ export default class {
 							return;
 						}
 
-						if (this.options.errorHandler) {
-							this.options.errorHandler(err);
-						}
+						this.handleError("releasing queue item", queueItem, err);
 					});
 				}, this.options.itemRetryDelayInMilliseconds);
 			}
@@ -82,12 +79,33 @@ export default class {
 			this.processQueue();
 		} catch (e) {
 			--this._runningThreads;
-
-			if (this.options.errorHandler) {
-				this.options.errorHandler(err);
-			}
-
 			this.processQueue();
+			this.handleError("processing queue item", queueItem, e);
 		}
+	}
+
+	handleError(detail, queueItem, e) {
+		if (!this.options.errorHandler) {
+			return;
+		}
+
+		let message = "";
+		let queueItemData = "";
+
+		if (e instanceof Error) {
+			message = e.stack || e.toString();
+		} else if (typeof(e) === "object" || Array.isArray(e)) {
+			message = JSON.stringify(e);
+		} else if (typeof(e) === "string") {
+			message = e;
+		} else {
+			message = `${e}`;
+		}
+
+		if (queueItem) {
+			queueItemData = JSON.stringify(queueItem);
+		}
+
+		this.options.errorHandler(`Unhandled exception ${detail}\n${queueItemData}\n\n${message}`);
 	}
 };
