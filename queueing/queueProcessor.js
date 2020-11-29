@@ -36,9 +36,10 @@ export default class {
 		}
 
 		++this._runningThreads;
+		let queueItem = null;
 
 		try {
-			const queueItem = await this.queue.lease(this.options.itemLockDurationInMilliseconds);
+			queueItem = await this.queue.lease(this.options.itemLockDurationInMilliseconds);
 			if (!queueItem) {
 				--this._runningThreads;
 				return;
@@ -82,12 +83,28 @@ export default class {
 			this.processQueue();
 		} catch (e) {
 			--this._runningThreads;
+			this.processQueue();
 
 			if (this.options.errorHandler) {
-				this.options.errorHandler(err);
-			}
+				let message = "";
+				let queueItemData = "";
 
-			this.processQueue();
+				if (e instanceof Error) {
+					message = e.stack || e.toString();
+				} else if (typeof(e) === "object" || Array.isArray(e)) {
+					message = JSON.stringify(e);
+				} else if (typeof(e) === "string") {
+					message = e;
+				} else {
+					message = `${e}`;
+				}
+
+				if (queueItem) {
+					queueItemData = JSON.stringify(queueItem);
+				}
+
+				this.options.errorHandler(`Unhandled exception processing queue item\n${queueItem}\n\n${message}`);
+			}
 		}
 	}
 };
