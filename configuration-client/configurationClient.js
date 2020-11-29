@@ -1,12 +1,18 @@
 import http from "@tix-factory/http";
 const SettingsCacheExpiry = 60 * 1000;
+const schemeRegex = /^\w+:/;
 
 export default class {
 	constructor(httpClient, logger, defaultValues) {
+		let configurationServiceHost = process.env.ConfigurationServiceHost;
+		if (!schemeRegex.test(configurationServiceHost)) {
+			configurationServiceHost = `https://${configurationServiceHost}`; 
+		}
+
 		this.httpClient = httpClient;
 		this.logger = logger;
 		this.defaultValues = {};
-		this.getApplicationSettingsEndpoint = new URL(`https://${process.env.ConfigurationServiceHost}/v1/GetApplicationSettings`);
+		this.getApplicationSettingsEndpoint = new URL(`${configurationServiceHost}/v1/GetApplicationSettings`);
 		this.cache = null;
 		this.settingsExpiration = 0;
 

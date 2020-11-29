@@ -1,10 +1,16 @@
 import http from "@tix-factory/http";
 import os from "os";
+const schemeRegex = /^\w+:/;
 
 export default class {
-	constructor(httpClient, loggingServiceHost, logName) {
+	constructor(httpClient, logName) {
+		let loggingServiceHost = process.env.LoggingServiceHost;
+		if (!schemeRegex.test(loggingServiceHost)) {
+			loggingServiceHost = `https://${loggingServiceHost}`; 
+		}
+
 		this.httpClient = httpClient;
-		this.loggingServiceEndpoint = new URL(`https://${loggingServiceHost}/v1/Log`);
+		this.loggingServiceEndpoint = new URL(`${loggingServiceHost}/v1/Log`);
 		this.hostName = os.hostname();
 		this.logName = logName
 	}
