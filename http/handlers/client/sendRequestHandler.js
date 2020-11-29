@@ -6,6 +6,13 @@ import httpErrors from "./../../constants/httpErrors.js";
 export default class {
 	constructor(httpClientOptions) {
 		this.httpClientOptions = httpClientOptions;
+
+		const agentOptions = {
+			keepAlive: true
+		};
+
+		this.httpAgent = new http.Agent(agentOptions);
+		this.httpsAgent = new https.Agent(agentOptions);
 	}
 
 	execute(httpRequest) {
@@ -36,26 +43,26 @@ export default class {
 				});
 			};
 
+			const requestTimeout = httpRequest.timeout || this.httpClientOptions.requestTimeout;
 			const requestOptions = {
 				method: httpRequest.method.toUpperCase(),
-				headers: {}
+				headers: {},
+				timeout: requestTimeout
 			};
 
 			httpRequest.headers.forEach(header => {
 				requestOptions.headers[header.name] = header.value;
 			});
-
-			const requestTimeout = httpRequest.timeout || this.httpClientOptions.requestTimeout;
 			
 			switch (httpRequest.url.protocol) {
 				case "http:":
 				case "https:":
+					requestOptions.agent = httpRequest.url.protocol === "http:" ? this.httpAgent : this.httpsAgent;
+
 					const request = httpRequest.url.protocol === "http:" ? http.request(httpRequest.url, requestOptions, requestStarted) : https.request(httpRequest.url, requestOptions, requestStarted);
 
-					request.on("socket", socket => {
-						socket.setTimeout(requestTimeout, () => socket.destroy());
-					});
-
+					// https://stackoverflow.com/a/55021202/1663648
+					request.on("timeout", () => request.abort());
 					request.on("error", requestError);
 
 					if (httpRequest.body) {
