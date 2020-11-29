@@ -5,7 +5,7 @@ import httpErrors from "./../../constants/httpErrors.js";
 
 export default class {
 	constructor(httpClientOptions) {
-		this._httpClientOptions = httpClientOptions;
+		this.httpClientOptions = httpClientOptions;
 	}
 
 	execute(httpRequest) {
@@ -45,10 +45,17 @@ export default class {
 				requestOptions.headers[header.name] = header.value;
 			});
 
+			const requestTimeout = httpRequest.timeout || this.httpClientOptions.requestTimeout;
+			
 			switch (httpRequest.url.protocol) {
 				case "http:":
 				case "https:":
 					const request = httpRequest.url.protocol === "http:" ? http.request(httpRequest.url, requestOptions, requestStarted) : https.request(httpRequest.url, requestOptions, requestStarted);
+
+					request.on("socket", socket => {
+						socket.setTimeout(requestTimeout, () => socket.destroy());
+					});
+
 					request.on("error", requestError);
 
 					if (httpRequest.body) {
