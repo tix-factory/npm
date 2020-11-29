@@ -9,7 +9,7 @@ import ApplicationMetadataOperation from "./operations/applicationMetadataOperat
 export default class {
 	constructor(options) {
 		if (!options.port) {
-			options.port = 3000;
+			options.port = process.env.NODE_ENV === "production" ? 80 : 3000;
 		}
 
 		this.options = options;
