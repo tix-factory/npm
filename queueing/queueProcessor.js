@@ -58,9 +58,7 @@ export default class {
 						return;
 					}
 
-					if (this.options.errorHandler) {
-						this.options.errorHandler(err);
-					}
+					this.handleError("removing queue item", queueItem, err);
 				});
 			} else {
 				setTimeout(() => {
@@ -72,9 +70,7 @@ export default class {
 							return;
 						}
 
-						if (this.options.errorHandler) {
-							this.options.errorHandler(err);
-						}
+						this.handleError("releasing queue item", queueItem, err);
 					});
 				}, this.options.itemRetryDelayInMilliseconds);
 			}
@@ -84,27 +80,32 @@ export default class {
 		} catch (e) {
 			--this._runningThreads;
 			this.processQueue();
-
-			if (this.options.errorHandler) {
-				let message = "";
-				let queueItemData = "";
-
-				if (e instanceof Error) {
-					message = e.stack || e.toString();
-				} else if (typeof(e) === "object" || Array.isArray(e)) {
-					message = JSON.stringify(e);
-				} else if (typeof(e) === "string") {
-					message = e;
-				} else {
-					message = `${e}`;
-				}
-
-				if (queueItem) {
-					queueItemData = JSON.stringify(queueItem);
-				}
-
-				this.options.errorHandler(`Unhandled exception processing queue item\n${queueItem}\n\n${message}`);
-			}
+			this.handleError("processing queue item", queueItem, e);
 		}
+	}
+
+	handleError(detail, queueItem, e) {
+		if (!this.options.errorHandler) {
+			return;
+		}
+
+		let message = "";
+		let queueItemData = "";
+
+		if (e instanceof Error) {
+			message = e.stack || e.toString();
+		} else if (typeof(e) === "object" || Array.isArray(e)) {
+			message = JSON.stringify(e);
+		} else if (typeof(e) === "string") {
+			message = e;
+		} else {
+			message = `${e}`;
+		}
+
+		if (queueItem) {
+			queueItemData = JSON.stringify(queueItem);
+		}
+
+		this.options.errorHandler(`Unhandled exception ${detail}\n${queueItem}\n\n${message}`);
 	}
 };
