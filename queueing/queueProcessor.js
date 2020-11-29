@@ -106,6 +106,6 @@ export default class {
 			queueItemData = JSON.stringify(queueItem);
 		}
 
-		this.options.errorHandler(`Unhandled exception ${detail}\n${queueItem}\n\n${message}`);
+		this.options.errorHandler(`Unhandled exception ${detail}\n${queueItemData}\n\n${message}`);
 	}
 };
