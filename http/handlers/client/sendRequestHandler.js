@@ -5,14 +5,17 @@ import httpErrors from "./../../constants/httpErrors.js";
 
 export default class {
 	constructor(httpClientOptions) {
+		if (!httpClientOptions.agentOptions) {
+			httpClientOptions.agentOptions = {
+				keepAlive: true,
+				scheduling: "lifo"
+			};
+		}
+
 		this.httpClientOptions = httpClientOptions;
 
-		const agentOptions = {
-			keepAlive: true
-		};
-
-		this.httpAgent = new http.Agent(agentOptions);
-		this.httpsAgent = new https.Agent(agentOptions);
+		this.httpAgent = new http.Agent(httpClientOptions.agentOptions);
+		this.httpsAgent = new https.Agent(httpClientOptions.agentOptions);
 	}
 
 	execute(httpRequest) {
@@ -36,13 +39,6 @@ export default class {
 				});
 			};
 
-			const requestError = (e) => {
-				reject({
-					code: httpErrors.unknown,
-					data: e
-				});
-			};
-
 			const requestTimeout = httpRequest.timeout || this.httpClientOptions.requestTimeout;
 			const requestOptions = {
 				method: httpRequest.method.toUpperCase(),
@@ -62,8 +58,21 @@ export default class {
 					const request = httpRequest.url.protocol === "http:" ? http.request(httpRequest.url, requestOptions, requestStarted) : https.request(httpRequest.url, requestOptions, requestStarted);
 
 					// https://stackoverflow.com/a/55021202/1663648
-					request.on("timeout", () => request.abort());
-					request.on("error", requestError);
+					let timeout = false;
+					request.on("timeout", () => {
+						timeout = true;
+						request.abort()
+					});
+
+					request.on("error", e => {
+						reject({
+							code: timeout ? httpErrors.timeout : httpErrors.unknown,
+							data: {
+								url: httpRequest.url,
+								error: e
+							}
+						});
+					});
 
 					if (httpRequest.body) {
 						request.write(httpRequest.body);
@@ -75,7 +84,10 @@ export default class {
 				default:
 					reject({
 						code: httpErrors.unrecognizedProtocol,
-						data: httpRequest.url.protocol
+						data: {
+							url: httpRequest.url,
+							protocol: httpRequest.url.protocol
+						}
 					});
 			}
 		});

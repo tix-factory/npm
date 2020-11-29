@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/tix-factory/npm/issues"
   },
-  "homepage": "https://github.com/tix-factory/npm/blob/main/queueing"
+  "homepage": "https://github.com/tix-factory/npm/blob/main/queueing",
+  "dependencies": {
+    "@tix-factory/http": "file:../http"
+  }
 }
