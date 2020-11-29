@@ -1,12 +1,19 @@
 import http from "@tix-factory/http";
 const GuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const CacheExpiryInMilliseconds = 60 * 1000;
+const schemeRegex = /^\w+:/;
 
 export default class extends http.handler {
 	constructor(httpClient, logger) {
 		super();
 
+		let applicationAuthorizationServiceHost = process.env.ApplicationAuthorizationServiceHost;
+		if (!schemeRegex.test(applicationAuthorizationServiceHost)) {
+			applicationAuthorizationServiceHost = `https://${applicationAuthorizationServiceHost}`; 
+		}
+
 		this.httpClient = httpClient;
+		this.getAuthorizedOperationsEndpoint = new URL(`${applicationAuthorizationServiceHost}/v1/GetAuthorizedOperations`);
 		this.logger = logger;
 		this.cache = {};
 	}
@@ -73,7 +80,7 @@ export default class extends http.handler {
 	loadAuthorizationedOperations(apiKey) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				const httpRequest = new http.request(http.methods.post, new URL(`https://${process.env.ApplicationAuthorizationServiceHost}/v1/GetAuthorizedOperations`));
+				const httpRequest = new http.request(http.methods.post, this.getAuthorizedOperationsEndpoint);
 				httpRequest.addOrUpdateHeader("Tix-Factory-Api-Key", process.env.ApplicationApiKey);
 				httpRequest.addOrUpdateHeader("Content-Type", "application/json");
 				httpRequest.body = Buffer.from(JSON.stringify({

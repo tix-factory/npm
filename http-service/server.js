@@ -17,7 +17,7 @@ export default class {
 			requestTimeout: 10 * 1000
 		});
 		
-		this.logger = new Logger(this.httpClient, process.env.LoggingServiceHost, options.logName);
+		this.logger = new Logger(this.httpClient, options.logName);
 		this.authorizationHandler = new AuthorizationHandler(this.httpClient, this.logger);
 		this.app = express();
 		this.operationRegistry = new OperationRegistry(this.registrOperation.bind(this));
