@@ -1,6 +1,6 @@
 import express from "express";
 import http from "@tix-factory/http";
-import Logger from "./logger.js";
+import { Logger } from "@tix-factory/logging-client";
 import AuthorizationHandler from "./handlers/authorizationHandler.js";
 import OperationRegistry from "./operationRegistry.js";
 import FaviconOperation from "./operations/faviconOperation.js";
