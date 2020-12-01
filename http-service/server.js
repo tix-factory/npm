@@ -1,10 +1,12 @@
 import express from "express";
+import promClient from "prom-client";
 import http from "@tix-factory/http";
 import { Logger } from "@tix-factory/logging-client";
 import AuthorizationHandler from "./handlers/authorizationHandler.js";
 import OperationRegistry from "./operationRegistry.js";
 import FaviconOperation from "./operations/faviconOperation.js";
 import ApplicationMetadataOperation from "./operations/applicationMetadataOperation.js";
+import MetricsOperation from "./operations/metricsOperation.js";
 
 export default class {
 	constructor(options) {
@@ -20,15 +22,38 @@ export default class {
 		this.logger = new Logger(this.httpClient, options.logName);
 		this.authorizationHandler = new AuthorizationHandler(this.httpClient, this.logger);
 		this.app = express();
-		this.operationRegistry = new OperationRegistry(this.registrOperation.bind(this));
+		this.operationRegistry = new OperationRegistry(this.registerOperation.bind(this));
 
 		this.app.use(express.json());
 
 		this.operationRegistry.registerOperation(new FaviconOperation(options.faviconFileName || "./favicon.ico"));
 		this.operationRegistry.registerOperation(new ApplicationMetadataOperation(options.name));
+
+		this.registerMetrics();
 	}
 
-	registrOperation(operation) {
+	registerMetrics() {
+		this.counters = {
+			executionTime: new promClient.Gauge({
+				name: "operation_execution_time",
+				help: "Operation execution time in milliseconds.",
+				labelNames: ["operationName"]
+			}),
+			executionCount: new promClient.Gauge({
+				name: "operation_execution_count",
+				help: "Operation executions per collection interval.",
+				labelNames: ["operationName", "statusCode"]
+			})
+		};
+
+		promClient.register.setDefaultLabels({
+			applicationName: this.options.name
+		});
+		
+		this.operationRegistry.registerOperation(new MetricsOperation(promClient.register));
+	}
+
+	registerOperation(operation) {
 		switch (operation.method) {
 			case http.methods.get:
 			case http.methods.post:
@@ -45,15 +70,21 @@ export default class {
 	}
 
 	async handleRequest(operation, request, response) {
+		let statusCode = 0;
+
+		const endRequestDuration = this.counters.executionTime.startTimer({
+			operationName: operation.name
+		});
+
 		try {
-			const apiKey = request.header("Tix-Factory-Api-Key");
+			const apiKey = this.getApiKey(request);
 			const isAuthorized = await this.authorizationHandler.isAuthorized(apiKey, operation);
 			if (isAuthorized) {
 				const result = await operation.execute(operation.method === http.methods.get ? request.params : request.body);
 				if (result === undefined) {
-					response.status(204);
+					response.status(statusCode = 204);
 				} else {
-					response.status(200);
+					response.status(statusCode = 200);
 
 					if (operation.contentType) {
 						response.set("Content-Type", operation.contentType);
@@ -68,39 +99,49 @@ export default class {
 					}
 				}
 			} else {
-				response.status(401);
+				response.status(statusCode = 401);
 				response.send({});
 			}
 		} catch (e) {
 			if (typeof(e) === "string") {
-				response.status(400);
+				response.status(statusCode = 400);
 				response.send({
 					error: e
 				});
 			} else {
-				response.status(500);
+				response.status(statusCode = 500);
 				response.send({});
 
 				let message = `Unhandled exception in ${operation.name}`;
 				message += `\n\tUrl: (${request.method}) ${request.hostname}${request.originalUrl}\n\n`;
 
-				if (e instanceof Error) {
-					message += e.stack || e.toString();
-				} else if (typeof(e) === "object" || Array.isArray(e)) {
-					message += JSON.stringify(e);
-				} else {
-					message += `${e}`;
-				}
-
-				this.logger.error(message);
+				this.logger.error(message, e);
 			}
 		} finally {
 			response.end();
+		}
+
+		try {
+			endRequestDuration();
+			this.counters.executionCount.inc({
+				operationName: operation.name,
+				statusCode: statusCode
+			});
+		}catch (e) {
+			this.logger.warn("failed to record request metrics", e);
 		}
 	}
 
 	notFoundHandler(request, response, next) {
 		response.status(404).send({});
+
+		try {
+			this.counters.executionCount.inc({
+				statusCode: 404
+			});
+		}catch (e) {
+			this.logger.warn("failed to record 404", e);
+		}
 	}
 
 	listen() {
@@ -109,5 +150,26 @@ export default class {
 		this.app.listen(this.options.port, () => {
 			this.logger.verbose(`${this.options.name} started\n\tPort: ${this.options.port}`);
 		});
+	}
+
+	getApiKey(request) {
+		let apiKey = request.header("Tix-Factory-Api-Key");
+		if (apiKey) {
+			return apiKey;
+		}
+
+		let authorization = request.header("Authorization");
+		if (authorization) {
+			let authorizationSplit = authorization.split(" ");
+			if (authorizationSplit.length === 2
+				&& authorizationSplit[0] === "Bearer") {
+				try {
+					const buffer = Buffer.from(authorizationSplit[1], 'base64');
+					return buffer.toString();
+				} catch {
+					// Could not base64 decode the header.
+				}
+			}
+		}
 	}
 }
