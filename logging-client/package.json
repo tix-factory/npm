@@ -1,5 +1,5 @@
 {
-  "name": "@tix-factory/http-service",
+  "name": "@tix-factory/logging-client",
   "version": "2.0.0",
   "description": "",
   "main": "index.js",
@@ -10,18 +10,15 @@
     "url": "git+https://github.com/tix-factory/npm.git"
   },
   "keywords": [
-    "http"
+    "logging"
   ],
   "author": "tix-factory",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/tix-factory/npm/issues"
   },
-  "homepage": "https://github.com/tix-factory/npm/blob/main/http-service",
+  "homepage": "https://github.com/tix-factory/npm/blob/main/logging-client",
   "dependencies": {
-    "cookiejar": "^2.1.2",
-	"express": "^4.17.1",
-    "@tix-factory/http": "file:../http",
-    "@tix-factory/logging-client": "file:../logging-client"
+    "@tix-factory/http": "file:../http"
   }
 }
