@@ -20,6 +20,7 @@ export default class {
 		});
 		
 		this.logger = new Logger(this.httpClient, options.logName);
+		this.promClient = promClient;
 		this.authorizationHandler = new AuthorizationHandler(this.httpClient, this.logger);
 		this.app = express();
 		this.operationRegistry = new OperationRegistry(this.registerOperation.bind(this));
