@@ -36,10 +36,10 @@ export default class {
 		this.counters = {
 			executionTime: new promClient.Gauge({
 				name: "operation_execution_time",
-				help: "Operation execution time in milliseconds.",
+				help: "Operation execution time in seconds.",
 				labelNames: ["operationName"]
 			}),
-			executionCount: new promClient.Gauge({
+			executionCount: new promClient.Counter({
 				name: "operation_execution_count",
 				help: "Operation executions per collection interval.",
 				labelNames: ["operationName", "statusCode"]
@@ -49,7 +49,7 @@ export default class {
 		promClient.register.setDefaultLabels({
 			applicationName: this.options.name
 		});
-		
+
 		this.operationRegistry.registerOperation(new MetricsOperation(promClient.register));
 	}
 
