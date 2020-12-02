@@ -23,6 +23,7 @@ jobs:
         node ./build/replaceVersions.js ./http-service/package.json 2.0.$BUILD_NUMBER
         node ./build/replaceVersions.js ./mysql-data/package.json 2.0.$BUILD_NUMBER
         node ./build/replaceVersions.js ./configuration-client/package.json 2.0.$BUILD_NUMBER
+        node ./build/replaceVersions.js ./logging-client/package.json 2.0.$BUILD_NUMBER
     - name: Publish to npm
       if: ${{ github.ref == 'refs/heads/main' }}
       run: |
@@ -31,5 +32,6 @@ jobs:
         npm publish ./http-service --access public
         npm publish ./mysql-data --access public
         npm publish ./configuration-client --access public
+        npm publish ./logging-client --access public
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_PAT }}
