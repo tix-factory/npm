@@ -28,15 +28,7 @@ export default class extends HttpHandler {
 				const authorizedOperations = await this.getAuthorizedOperations(apiKey);
 				resolve(authorizedOperations.includes(operation.name.toLowerCase()));
 			} catch (e) {
-				let errorStack;
-				if (err instanceof Error) {
-					errorStack = err.stack;
-				} else {
-					errorStack = JSON.stringify(err);
-				}
-
-				this.logger.error(`Failed to load application authorizations for ApiKey.\n${errorStack}`);
-
+				this.logger.error(`Failed to load application authorizations for ApiKey.\n`, e);
 				resolve(false);
 			}
 		});
@@ -66,14 +58,7 @@ export default class extends HttpHandler {
 		this.loadAuthorizationedOperations(apiKey).then(() => {
 			// Loading the authorizations also cached them.
 		}).catch(err => {
-			let errorStack;
-			if (err instanceof Error) {
-				errorStack = err.stack;
-			} else {
-				errorStack = JSON.stringify(err);
-			}
-
-			this.logger.warn(`Failed to refresh application authorizations for ApiKey.\n${errorStack}`);
+			this.logger.warn(`Failed to refresh application authorizations for ApiKey.\n`, err);
 		});
 	}
 

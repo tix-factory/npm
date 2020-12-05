@@ -42,14 +42,7 @@ export default class {
 					this.loadApplicationSettings().then(settings => {
 						this.cache = settings;
 					}).catch(err => {
-						let errorStack;
-						if (err instanceof Error) {
-							errorStack = err.stack;
-						} else {
-							errorStack = JSON.stringify(err);
-						}
-
-						this.logger.warn(`Failed to refresh application settings\n${errorStack}`);
+						this.logger.warn(`Failed to refresh application settings\n`, err);
 					});
 				}
 
