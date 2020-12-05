@@ -1,5 +1,5 @@
 import ConfigurationClient from "./configurationClient.js";
 
-export default {
-	configurationClient: ConfigurationClient
+export {
+	ConfigurationClient as ConfigurationClient
 };
