@@ -19,10 +19,15 @@ export default class {
 
 	serialize(e) {
 		if (e instanceof Error) {
-			let message = e.message || e.toString();
-			
+			let message = "";
 			if (e.stack) {
-				message += `\n${e.stack}`;
+				if (e.stack.includes(e.message)) {
+					message = e.stack;
+				} else {
+					message = `${e.message}\n${e.stack}`;
+				}
+			} else {
+				message = e.message || e.toString();
 			}
 			
 			if (e.innerError) {

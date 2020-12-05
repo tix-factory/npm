@@ -1,8 +1,7 @@
 export default class extends Error {
 	constructor(httpRequest, httpResponse) {
 		super(`HttpRequest failed.`
-			+ `\n\tUrl: ${httpRequest.url}`
-			+ `\n\tMethod: ${httpRequest.method}`
+			+ `\n\tUrl: (${httpRequest.method?.toUpperCase()}) ${httpRequest.url}`
 			+ `\n\tStatus Code: ${httpResponse.statusCode}`);
 
 		this.httpRequest = httpRequest;
