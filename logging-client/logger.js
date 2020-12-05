@@ -1,5 +1,6 @@
 import { HttpRequest, httpMethods } from "@tix-factory/http";
 import os from "os";
+import LogError from "./logError.js";
 const schemeRegex = /^\w+:/;
 
 export default class {
@@ -50,7 +51,7 @@ export default class {
 		this.writeAsync(logLevel, logPieces).then(() => {
 			// Logged successfully
 		}).catch((err) => {
-			console.error("request to logging service failed", err);
+			console.error("request to logging service failed", err, err?.logData);
 		});
 	}
 
@@ -81,13 +82,7 @@ export default class {
 					return;
 				}
 
-				reject({
-					data: {
-						statusCode: response.statusCode,
-						data: logData
-					},
-					code: "LoggingServiceRequestFailed"
-				});
+				reject(new LogError(httpRequest, response, logData));
 			}).catch(reject);
 		});
 	}
