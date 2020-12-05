@@ -1,8 +1,8 @@
-import HttpHandler from "./../httpHandler.js";
-import HttpRequest from "./../../httpRequest.js";
-import HttpClientError from "./../../errors/httpClientError.js";
-import httpErrors from "./../../constants/httpErrors.js";
-import httpMethods from "./../../constants/httpMethods.js";
+import HttpHandler from "./httpHandler.js";
+import HttpRequest from "./../httpRequest.js";
+import HttpClientError from "./../errors/httpClientError.js";
+import httpErrors from "./../constants/httpErrors.js";
+import httpMethods from "./../constants/httpMethods.js";
 
 export default class extends HttpHandler {
 	constructor(httpClientOptions) {

@@ -1,8 +1,8 @@
 import http from "http";
 import https from "https";
-import HttpResponse from "./../../httpResponse.js";
-import HttpClientError from "./../../errors/httpClientError.js";
-import httpErrors from "./../../constants/httpErrors.js";
+import HttpResponse from "./../httpResponse.js";
+import HttpClientError from "./../errors/httpClientError.js";
+import httpErrors from "./../constants/httpErrors.js";
 
 export default class {
 	constructor(httpClientOptions) {
