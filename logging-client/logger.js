@@ -2,6 +2,7 @@ import { HttpRequest, httpMethods } from "@tix-factory/http";
 import os from "os";
 import LogError from "./logError.js";
 const schemeRegex = /^\w+:/;
+const whitespaceRegex = /\s+^/;
 
 export default class {
 	constructor(httpClient, logName) {
@@ -18,7 +19,17 @@ export default class {
 
 	serialize(e) {
 		if (e instanceof Error) {
-			let message = e.stack || e.toString();
+			let message = "";
+			if (e.stack) {
+				if (e.stack.includes(e.message)) {
+					message = e.stack;
+				} else {
+					message = `${e.message}\n${e.stack}`;
+				}
+			} else {
+				message = e.message || e.toString();
+			}
+			
 			if (e.innerError) {
 				message += `\nINNER ERROR\n${this.serialize(e.innerError)}`;
 			}
@@ -71,7 +82,12 @@ export default class {
 			};
 	
 			for (let i = 0; i < logPieces.length; i++) {
-				logData.message += (logData.message ? " " : "") + this.serialize(logPieces[i]);
+				let whitespacePrepend = "";
+				if (logData.message && !whitespaceRegex.test(logData.message)) {
+					whitespacePrepend = " ";
+				}
+
+				logData.message += whitespacePrepend + this.serialize(logPieces[i]);
 			}
 	
 			const httpRequest = new HttpRequest(httpMethods.post, this.loggingServiceEndpoint);
