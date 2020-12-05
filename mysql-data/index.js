@@ -1,13 +1,10 @@
-import mysql from "mysql";
 import ConnectionPool from "./connectionPool.js";
 import ConfiguredConnection from "./configuredConnection.js";
 import mySqlErrors from "./mySqlErrors.js";
 
-export default {
-	mysql_module: mysql,
+export {
+	mySqlErrors as mySqlErrors,
 
-	errors: mySqlErrors,
-
-	ConnectionPool: ConnectionPool,
-	ConfiguredConnection: ConfiguredConnection
+	ConnectionPool as ConnectionPool,
+	ConfiguredConnection as ConfiguredConnection
 };

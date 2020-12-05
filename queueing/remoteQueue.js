@@ -1,4 +1,4 @@
-import http from "@tix-factory/http";
+import { HttpRequest, httpMethods } from "@tix-factory/http";
 import EventEmitter from "events";
 import queueError from "./queueError.js";
 const schemeRegex = /^\w+:/;
@@ -235,7 +235,7 @@ export default class extends EventEmitter {
 	sendPostRequest(url, requestBody) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				const httpRequest = new http.request(http.methods.post, url);
+				const httpRequest = new HttpRequest(httpMethods.post, url);
 				httpRequest.addOrUpdateHeader("Content-Type", "application/json");
 				httpRequest.addOrUpdateHeader("Tix-Factory-Api-Key", process.env.ApplicationApiKey);
 				httpRequest.body = Buffer.from(JSON.stringify(requestBody));

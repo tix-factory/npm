@@ -1,4 +1,4 @@
-import http from "@tix-factory/http";
+import { HttpRequest, httpMethods } from "@tix-factory/http";
 const SettingsCacheExpiry = 60 * 1000;
 const schemeRegex = /^\w+:/;
 
@@ -66,7 +66,7 @@ export default class {
 
 	loadApplicationSettings() {
 		return new Promise((resolve, reject) => {
-			const httpRequest = new http.request(http.methods.post, this.getApplicationSettingsEndpoint);
+			const httpRequest = new HttpRequest(httpMethods.post, this.getApplicationSettingsEndpoint);
 			httpRequest.addOrUpdateHeader("Tix-Factory-Api-Key", process.env.ApplicationApiKey);
 			httpRequest.addOrUpdateHeader("Content-Type", "application/json");
 			httpRequest.body = Buffer.from("{}");

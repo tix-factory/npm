@@ -3,8 +3,8 @@ TODO
 
 ## Example
 ```js
-import http from "@tix-factory/http";
-import httpService from "@tix-factory/http-service";
+import { httpMethods } from "@tix-factory/http";
+import { HttpServer } from "@tix-factory/http-service";
 
 class exampleOperation {
 	get allowAnonymous() {
@@ -20,7 +20,7 @@ class exampleOperation {
 	}
 
 	get method() {
-		return http.methods.post;
+		return httpMethods.post;
 	}
 
 	execute(httpRequest) {
@@ -30,7 +30,7 @@ class exampleOperation {
 	}
 }
 
-const service = new httpService.server({
+const service = new HttpServer({
 	name: "example-service",
 	logName: "TFES1.TixFactory.Example.Service"
 });

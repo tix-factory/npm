@@ -3,10 +3,10 @@ TODO
 
 ## Example
 ```js
-import mysql from "@tix-factory/mysql-data";
+import { ConnectionPool } from "@tix-factory/mysql-data";
 
 const connectionString = "...";
-const connection = new mysql.connection(connectionString, {
+const connection = new ConnectionPool(connectionString, {
 	// Only valid if the connection has SslMode=REQUIRED
 	sslCertificateFileName: `${__dirname}/ca-certificate.crt`;
 });

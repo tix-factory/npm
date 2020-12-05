@@ -1,9 +1,9 @@
-import http from "@tix-factory/http";
+import { HttpRequest, HttpHandler, httpMethods } from "@tix-factory/http";
 const GuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const CacheExpiryInMilliseconds = 60 * 1000;
 const schemeRegex = /^\w+:/;
 
-export default class extends http.handler {
+export default class extends HttpHandler {
 	constructor(httpClient, logger) {
 		super();
 
@@ -80,7 +80,7 @@ export default class extends http.handler {
 	loadAuthorizationedOperations(apiKey) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				const httpRequest = new http.request(http.methods.post, this.getAuthorizedOperationsEndpoint);
+				const httpRequest = new HttpRequest(httpMethods.post, this.getAuthorizedOperationsEndpoint);
 				httpRequest.addOrUpdateHeader("Tix-Factory-Api-Key", process.env.ApplicationApiKey);
 				httpRequest.addOrUpdateHeader("Content-Type", "application/json");
 				httpRequest.body = Buffer.from(JSON.stringify({

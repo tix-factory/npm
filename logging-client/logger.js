@@ -1,4 +1,4 @@
-import http from "@tix-factory/http";
+import { HttpRequest, httpMethods } from "@tix-factory/http";
 import os from "os";
 const schemeRegex = /^\w+:/;
 
@@ -68,7 +68,7 @@ export default class {
 				logData.message += (logData.message ? " " : "") + this.serialize(logPieces[i]);
 			}
 	
-			const httpRequest = new http.request(http.methods.post, this.loggingServiceEndpoint);
+			const httpRequest = new HttpRequest(httpMethods.post, this.loggingServiceEndpoint);
 			httpRequest.addOrUpdateHeader("Content-Type", "application/json");
 			httpRequest.body = Buffer.from(JSON.stringify(logData));
 	
