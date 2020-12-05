@@ -1,6 +1,7 @@
 import zlib from "zlib";
-import HttpHandler from "./../httpHandler.js";
-import httpErrors from "./../../constants/httpErrors.js";
+import HttpHandler from "./httpHandler.js";
+import HttpClientError from "../errors/httpClientError.js";
+import httpErrors from "../constants/httpErrors.js";
 
 export default class extends HttpHandler {
 	constructor() {
@@ -20,10 +21,7 @@ export default class extends HttpHandler {
 						case "gzip":
 							zlib.gunzip(httpResponse.body, (err, buffer) => {
 								if (err) {
-									reject({
-										code: httpErrors.contentDecodingFailed,
-										data: err
-									})
+									reject(new HttpClientError(httpRequest, httpErrors.contentDecodingFailed, err));
 								} else {
 									httpResponse.body = buffer;
 									resolve(httpResponse);

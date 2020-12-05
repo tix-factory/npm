@@ -3,11 +3,11 @@ TODO
 
 ## Example
 ```js
-import configurationClientModule from "@tix-factory/configuration-client";
-import http from "@tix-factory/http";
+import { ConfigurationClient } from "@tix-factory/configuration-client";
+import { HttpClient } from "@tix-factory/http";
 
-const httpClient = new http.client();
-const configurationClient = new configurationClientModule.configurationClient(httpClient, {
+const httpClient = new HttpClient();
+const configurationClient = new ConfigurationClient(httpClient, {
 	warn: console.warn.bind(console)
 }, {
 	example: "Hello, world!"

@@ -4,9 +4,9 @@ TODO
 ## Example
 ```js
 import { Logger } from "@tix-factory/logging-client";
-import http from "@tix-factory/http";
+import { HttpClient } from "@tix-factory/http";
 
-const httpClient = new http.client();
+const httpClient = new HttpClient();
 const logger = new Logger(httpClient);
 
 logger.error("hello world", "abc", 123);

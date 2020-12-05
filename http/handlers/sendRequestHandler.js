@@ -1,7 +1,8 @@
 import http from "http";
 import https from "https";
-import HttpResponse from "./../../httpResponse.js";
-import httpErrors from "./../../constants/httpErrors.js";
+import HttpResponse from "./../httpResponse.js";
+import HttpClientError from "./../errors/httpClientError.js";
+import httpErrors from "./../constants/httpErrors.js";
 
 export default class {
 	constructor(httpClientOptions) {
@@ -65,13 +66,7 @@ export default class {
 					});
 
 					request.on("error", e => {
-						reject({
-							code: timeout ? httpErrors.timeout : httpErrors.unknown,
-							data: {
-								url: httpRequest.url,
-								error: e
-							}
-						});
+						reject(new HttpClientError(httpRequest, timeout ? httpErrors.timeout : httpErrors.unknown, e));
 					});
 
 					if (httpRequest.body) {
@@ -82,13 +77,7 @@ export default class {
 
 					return;
 				default:
-					reject({
-						code: httpErrors.unrecognizedProtocol,
-						data: {
-							url: httpRequest.url,
-							protocol: httpRequest.url.protocol
-						}
-					});
+					reject(new HttpClientError(httpRequest, httpErrors.unrecognizedProtocol));
 			}
 		});
 	}

@@ -1,4 +1,4 @@
-import HttpHandler from "./../httpHandler.js";
+import HttpHandler from "./httpHandler.js";
 
 export default class extends HttpHandler {
 	constructor(cookiejar, cookieSaver) {

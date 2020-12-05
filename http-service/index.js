@@ -1,7 +1,9 @@
+import express from "express";
 import Server from "./server.js";
 import OperationRegistry from "./operationRegistry.js";
 
-export default {
-	server: Server,
-	operationRegistry: OperationRegistry
+export {
+	express as express,
+	Server as HttpServer,
+	OperationRegistry as OperationRegistry
 };

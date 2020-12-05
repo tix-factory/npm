@@ -1,4 +1,4 @@
-import http from "@tix-factory/http";
+import { HttpRequest, HttpRequestError, httpMethods } from "@tix-factory/http";
 const SettingsCacheExpiry = 60 * 1000;
 const schemeRegex = /^\w+:/;
 
@@ -42,14 +42,7 @@ export default class {
 					this.loadApplicationSettings().then(settings => {
 						this.cache = settings;
 					}).catch(err => {
-						let errorStack;
-						if (err instanceof Error) {
-							errorStack = err.stack;
-						} else {
-							errorStack = JSON.stringify(err);
-						}
-
-						this.logger.warn(`Failed to refresh application settings\n${errorStack}`);
+						this.logger.warn(`Failed to refresh application settings\n`, err);
 					});
 				}
 
@@ -66,7 +59,7 @@ export default class {
 
 	loadApplicationSettings() {
 		return new Promise((resolve, reject) => {
-			const httpRequest = new http.request(http.methods.post, this.getApplicationSettingsEndpoint);
+			const httpRequest = new HttpRequest(httpMethods.post, this.getApplicationSettingsEndpoint);
 			httpRequest.addOrUpdateHeader("Tix-Factory-Api-Key", process.env.ApplicationApiKey);
 			httpRequest.addOrUpdateHeader("Content-Type", "application/json");
 			httpRequest.body = Buffer.from("{}");
@@ -83,10 +76,7 @@ export default class {
 					resolve(settings);
 					return;
 				} else {
-					reject({
-						data: httpResponse.statusCode,
-						code: "Unknown"
-					});
+					reject(new HttpRequestError(httpRequest, httpResponse));
 				}
 			}).catch(reject);
 		});

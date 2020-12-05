@@ -1,6 +1,6 @@
 import express from "express";
 import promClient from "prom-client";
-import http from "@tix-factory/http";
+import { HttpClient, httpMethods } from "@tix-factory/http";
 import { Logger } from "@tix-factory/logging-client";
 import AuthorizationHandler from "./handlers/authorizationHandler.js";
 import OperationRegistry from "./operationRegistry.js";
@@ -15,7 +15,7 @@ export default class {
 		}
 
 		this.options = options;
-		this.httpClient = new http.client(options.httpClientOptions || {
+		this.httpClient = new HttpClient(options.httpClientOptions || {
 			requestTimeout: 10 * 1000
 		});
 		
@@ -56,13 +56,13 @@ export default class {
 
 	registerOperation(operation) {
 		switch (operation.method) {
-			case http.methods.get:
-			case http.methods.post:
-			case http.methods.patch:
-			case http.methods.put:
-			case http.methods.delete:
-			case http.methods.head:
-			case http.methods.options:
+			case httpMethods.get:
+			case httpMethods.post:
+			case httpMethods.patch:
+			case httpMethods.put:
+			case httpMethods.delete:
+			case httpMethods.head:
+			case httpMethods.options:
 				this.app[operation.method](operation.route, this.handleRequest.bind(this, operation));
 				return;
 			default:
@@ -81,7 +81,7 @@ export default class {
 			const apiKey = this.getApiKey(request);
 			const isAuthorized = await this.authorizationHandler.isAuthorized(apiKey, operation);
 			if (isAuthorized) {
-				const result = await operation.execute(operation.method === http.methods.get ? request.params : request.body);
+				const result = await operation.execute(operation.method === httpMethods.get ? request.params : request.body);
 				if (result === undefined) {
 					response.status(statusCode = 204);
 				} else {

@@ -1,4 +1,4 @@
-import http from "@tix-factory/http";
+import { httpMethods } from "@tix-factory/http";
 
 export default class {
 	constructor(prometheusRegister) {
@@ -18,7 +18,7 @@ export default class {
 	}
 
 	get method() {
-		return http.methods.get;
+		return httpMethods.get;
 	}
 
 	get contentType() {

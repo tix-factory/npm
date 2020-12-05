@@ -3,6 +3,7 @@ export default class extends Error {
 		super(message);
 
 		this.code = code;
+		this.message = message;
 		this.innerError = innerError;
 	}
-}
+};

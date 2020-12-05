@@ -1,6 +1,7 @@
 import mysql from "mysql";
 import fs from "fs";
 import mySqlErrors from "./mySqlErrors.js";
+import MySqlError from "./mySqlError.js";
 const StoredProcedureNameValidationRegex = /^\w+$/;
 
 const parseConnectionString = (connectionString, options) => {
@@ -130,23 +131,13 @@ export default class {
 					let parameterName = parameter.name.toLowerCase();
 
 					if (!parameterValues.hasOwnProperty(parameterName)) {
-						reject({
-							data: parameter.name,
-							code: mySqlErrors.missingParameter
-						});
+						reject(new MySqlError(mySqlErrors.missingParameter, `Missing stored procedure parameter\n\tParameter: ${parameter.name} (${parameter.type})\n\tStored Procedure: ${storedProcedureName}`));
 						return;
 					}
 
 					let parameterValue = parameterValues[parameterName];
 					if (!verifyParameterType(parameterValue, parameter.type)) {
-						reject({
-							data: {
-								name: parameter.name,
-								value: parameterValue,
-								type: parameter.type
-							},
-							code: mySqlErrors.invalidParameterType
-						});
+						reject(new MySqlError(mySqlErrors.invalidParameterType, `Invalid paramter type\n\tParameter: ${parameter.name} (expected ${parameter.type}, got ${typeof(parameterValue)})\n\tStored Procedure: ${storedProcedureName}`));
 						return;
 					}
 
@@ -166,10 +157,7 @@ export default class {
 
 		return new Promise((resolve, reject) => {
 			if (!StoredProcedureNameValidationRegex.test(storedProcedureName)) {
-				reject({
-					data: storedProcedureName,
-					code: mySqlErrors.invalidStoredProcedureName
-				});
+				reject(new MySqlError(mySqlErrors.invalidStoredProcedureName, `Invalid stored procedure name\n\tStored Procedure: ${storedProcedureName}`));
 				return;
 			}
 

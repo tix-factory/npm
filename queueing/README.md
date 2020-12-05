@@ -3,17 +3,17 @@ TODO
 
 ## Example
 ```js
-import http from "@tix-factory/http";
-import queueing from "@tix-factory/queueing";
+import { HttpClient } from "@tix-factory/http";
+import { RemoteQueue, QueueProcessor } from "@tix-factory/queueing";
 
-const httpClient = new http.client();
+const httpClient = new HttpClient();
 //const queue = new queueing.VirtualQueue();
-const queue = new queueing.RemoteQueue(httpClient, console, {
+const queue = new RemoteQueue(httpClient, console, {
 	queueName: "Example",
 	countRefreshInterval: 1000
 });
 
-const queueProcessor = new queueing.QueueProcessor({
+const queueProcessor = new QueueProcessor({
 	numberOfThreads: 10,
 	itemLockDurationInMilliseconds: 15 * 1000
 }, queue, item => {

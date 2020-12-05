@@ -1,7 +1,8 @@
 import EventEmitter from "events";
 import generateHash from "./generateHash.js";
 import lock from "./lock.js";
-import queueError from "./queueError.js";
+import queueErrors from "./queueErrors.js";
+import QueueError from "./queueError.js";
 
 export default class extends EventEmitter {
 	constructor() {
@@ -113,10 +114,7 @@ export default class extends EventEmitter {
 
 						return;
 					} else {
-						reject({
-							code: queueError.invalidLeaseHolder
-						});
-
+						reject(new QueueError(queueErrors.invalidLeaseHolder, `Failed to remove queue item (invalid lease holder)`));
 						return;
 					}
 				}
@@ -144,10 +142,7 @@ export default class extends EventEmitter {
 
 						return;
 					} else {
-						reject({
-							code: queueError.invalidLeaseHolder
-						});
-
+						reject(new QueueError(queueErrors.invalidLeaseHolder, `Failed to release queue item (invalid lease holder)`));
 						return;
 					}
 				}
