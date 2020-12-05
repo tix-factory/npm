@@ -1,4 +1,4 @@
-import queueError from "./queueError.js";
+import queueErrors from "./queueErrors.js";
 
 export default class {
 	constructor(options, queue, processItem) {
@@ -54,7 +54,7 @@ export default class {
 				this.queue.remove(queueItem.id, queueItem.leaseId).then(() => {
 					// yay it was removed from the queue, cause it was processed yay
 				}).catch(err => {
-					if (err.code && err.code.toLowerCase() === queueError.invalidLeaseHolder.toLowerCase()) {
+					if (err.code && err.code.toLowerCase() === queueErrors.invalidLeaseHolder.toLowerCase()) {
 						return;
 					}
 
@@ -66,7 +66,7 @@ export default class {
 						// woo, released!
 						// now something else can take it
 					}).catch(err => {
-						if (err.code && err.code.toLowerCase() === queueError.invalidLeaseHolder.toLowerCase()) {
+						if (err.code && err.code.toLowerCase() === queueErrors.invalidLeaseHolder.toLowerCase()) {
 							return;
 						}
 
@@ -89,23 +89,11 @@ export default class {
 			return;
 		}
 
-		let message = "";
 		let queueItemData = "";
-
-		if (e instanceof Error) {
-			message = e.stack || e.toString();
-		} else if (typeof(e) === "object" || Array.isArray(e)) {
-			message = JSON.stringify(e);
-		} else if (typeof(e) === "string") {
-			message = e;
-		} else {
-			message = `${e}`;
-		}
-
 		if (queueItem) {
 			queueItemData = JSON.stringify(queueItem);
 		}
 
-		this.options.errorHandler(`Unhandled exception ${detail}\n${queueItemData}\n\n${message}`);
+		this.options.errorHandler(`Unhandled exception ${detail}\n${queueItemData}\n\n`, e);
 	}
 };
