@@ -22,6 +22,8 @@ export default class {
 			if (e.innerError) {
 				message += `\nINNER ERROR\n${this.serialize(e.innerError)}`;
 			}
+
+			return message;
 		} else if (typeof(e) === "string") {
 			return e;
 		} else if (typeof(e) === "object" || Array.isArray(e)) {
