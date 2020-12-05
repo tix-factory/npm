@@ -17,7 +17,10 @@ export default class {
 
 	serialize(e) {
 		if (e instanceof Error) {
-			return e.stack || e.toString();
+			let message = e.stack || e.toString();
+			if (e.innerError) {
+				message += `\nINNER ERROR\n${this.serialize(e.innerError)}`;
+			}
 		} else if (typeof(e) === "string") {
 			return e;
 		} else if (typeof(e) === "object" || Array.isArray(e)) {
@@ -85,12 +88,7 @@ export default class {
 					},
 					code: "LoggingServiceRequestFailed"
 				});
-			}).catch((err) => {
-				reject({
-					data: err,
-					code: "Unknown"
-				});
-			});
+			}).catch(reject);
 		});
 	}
 };

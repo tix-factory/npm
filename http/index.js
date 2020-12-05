@@ -5,6 +5,8 @@ import HttpResponse from "./httpResponse.js";
 import HttpClient from "./httpClient.js";
 import HttpServer from "./httpServer.js";
 import HttpHandler from "./handlers/httpHandler.js";
+import HttpRequestError from "./errors/httpRequestError.js"
+import HttpClientError from "./errors/httpClientError.js";
 
 export {
 	httpMethods as httpMethods,
@@ -14,5 +16,7 @@ export {
 	HttpResponse as HttpResponse,
 	HttpClient as HttpClient,
 	HttpServer as HttpServer,
-	HttpHandler as HttpHandler
+	HttpHandler as HttpHandler,
+	HttpRequestError as HttpRequestError,
+	HttpClientError as HttpClientError
 };

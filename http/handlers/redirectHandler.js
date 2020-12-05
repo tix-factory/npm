@@ -1,5 +1,6 @@
 import HttpHandler from "./../httpHandler.js";
 import HttpRequest from "./../../httpRequest.js";
+import HttpClientError from "./../../errors/httpClientError.js";
 import httpErrors from "./../../constants/httpErrors.js";
 import httpMethods from "./../../constants/httpMethods.js";
 
@@ -36,10 +37,7 @@ export default class extends HttpHandler {
 					return;
 				} while (redirects <= this._httpClientOptions.maxRedirects);
 
-				reject({
-					data: httpRequest.url,
-					code: httpErrors.maxRedirects
-				});
+				reject(new HttpClientError(httpRequest, httpErrors.maxRedirects));
 			} catch (e) {
 				reject(e)
 			}

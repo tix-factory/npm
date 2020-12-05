@@ -1,4 +1,4 @@
-import { HttpRequest, httpMethods } from "@tix-factory/http";
+import { HttpRequest, HttpRequestError, httpMethods } from "@tix-factory/http";
 const SettingsCacheExpiry = 60 * 1000;
 const schemeRegex = /^\w+:/;
 
@@ -83,10 +83,7 @@ export default class {
 					resolve(settings);
 					return;
 				} else {
-					reject({
-						data: httpResponse.statusCode,
-						code: "Unknown"
-					});
+					reject(new HttpRequestError(httpRequest, httpResponse));
 				}
 			}).catch(reject);
 		});

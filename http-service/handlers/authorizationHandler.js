@@ -1,4 +1,4 @@
-import { HttpRequest, HttpHandler, httpMethods } from "@tix-factory/http";
+import { HttpRequest, HttpHandler, HttpRequestError, httpMethods } from "@tix-factory/http";
 const GuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const CacheExpiryInMilliseconds = 60 * 1000;
 const schemeRegex = /^\w+:/;
@@ -97,10 +97,7 @@ export default class extends HttpHandler {
 					resolve(authorizedOperations);
 					return;
 				} else {
-					reject({
-						data: httpResponse.statusCode,
-						code: "Unknown"
-					});
+					reject(new HttpRequestError(httpRequest, httpResponse));
 				}
 			} catch (e) {
 				reject(e);

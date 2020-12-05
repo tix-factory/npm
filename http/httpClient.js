@@ -1,8 +1,8 @@
 import cookiejar from "cookiejar";
-import CompressionHandler from "./handlers/client/compressionHandler.js";
-import RedirectHandler from "./handlers/client/redirectHandler.js";
-import CookieHandler from "./handlers/client/cookieHandler.js";
-import SendRequestHandler from "./handlers/client/sendRequestHandler.js";
+import CompressionHandler from "./handlers/compressionHandler.js";
+import RedirectHandler from "./handlers/redirectHandler.js";
+import CookieHandler from "./handlers/cookieHandler.js";
+import SendRequestHandler from "./handlers/sendRequestHandler.js";
 
 const blankCookieSaver = (cookiejar) => {};
 
