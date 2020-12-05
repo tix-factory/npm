@@ -1,5 +1,8 @@
-export default {
-	"unknown": "unknown",
-	"invalidLeaseHolder": "invalidLeaseHolder",
-	"invalidQueueItemData": "invalidQueueItemData"
-};
+export default class extends Error {
+	constructor(code, message, innerError) {
+		super(message);
+
+		this.code = code;
+		this.innerError = innerError;
+	}
+}

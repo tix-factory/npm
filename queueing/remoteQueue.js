@@ -1,6 +1,7 @@
-import { HttpRequest, httpMethods } from "@tix-factory/http";
+import { HttpRequest, HttpResponseError, httpMethods } from "@tix-factory/http";
 import EventEmitter from "events";
-import queueError from "./queueError.js";
+import queueErrors from "./queueErrors.js";
+import QueueError from "./queueError.js";
 const schemeRegex = /^\w+:/;
 
 const prependZero = (num) => {
@@ -213,19 +214,8 @@ export default class extends EventEmitter {
 			this.triggerSizeChange(sizes.size);
 			this.triggerHeldSizeChange(sizes.heldSize);
 		}).catch(e => {
-			let message = "";
-			if (e instanceof Error) {
-				message = e.stack || e.toString();
-			} else if (typeof(e) === "object" || Array.isArray(e)) {
-				message = JSON.stringify(e);
-			} else if (typeof(e) === "string") {
-				message = e;
-			} else {
-				message = `${e}`;
-			}
-			
 			if (this.logger) {
-				this.logger.warn(`Unexpected exception thrown reading queue size.\n${message}`)
+				this.logger.warn(`Unexpected exception thrown reading queue size.\n`, e);
 			}
 		}).finally(() => {
 			this._loadQueueSizeDebounce = false;
@@ -245,16 +235,8 @@ export default class extends EventEmitter {
 					resolve(JSON.parse(httpResponse.body.toString()));
 				} else if (httpResponse.statusCode === 204) {
 					resolve();
-				} else if (httpResponse.statusCode === 400) {
-					const responseBody = JSON.parse(httpResponse.body.toString());
-					resolve({
-						code: responseBody.code
-					});
 				} else {
-					reject({
-						data: httpResponse.statusCode,
-						code: "QueueServiceRequestFailed"
-					});
+					reject(new HttpResponseError(httpRequest, httpResponse, queueErrors));
 				}
 			} catch (e) {
 				reject(e);
@@ -264,7 +246,8 @@ export default class extends EventEmitter {
 
 	parseQueueItemData(queueItem) {
 		return new Promise((resolve, reject) => {
-			let message = "";
+			let innerError = null;
+
 			try {
 				const data = JSON.parse(queueItem.data);
 				if (data.data) {
@@ -272,39 +255,23 @@ export default class extends EventEmitter {
 					return;
 				}
 			} catch (e) {
-				message = this.serializeError(e);
+				innerError = e;
 			}
 
 			if (this.logger) {
-				this.logger.warn(`Failed to parse queue item. Removing from queue...\n\tID: ${queueItem.id}\n\tData: ${queueItem.data}\n\n${message}`);
+				this.logger.warn(`Failed to parse queue item. Removing from queue...\n\tID: ${queueItem.id}\n\tData: ${queueItem.data}\n\n`, innerError);
 			}
 
 			this.remove(queueItem.id, queueItem.leaseId).then(() => {
 				// Successfully removed bad item from queue
 			}).catch(e => {
 				if (this.logger) {
-					message = this.serializeError(e);
-					this.logger.warn(`Failed to remove queue item.\n\tID: ${queueItem.id}\n\n${message}`);
+					this.logger.warn(`Failed to remove queue item.\n\tID: ${queueItem.id}\n\n`, e);
 				}
 			}).finally(() => {
-				reject(queueError.invalidQueueItemData);
+				reject(new QueueError(queueErrors.code, `Failed to parse queue item data. Item removed from queue.\n\tID: ${queueItem.id}\n\tData: ${queueItem.data}`, innerError));
 			});
 		});
-	}
-
-	serializeError(e) {
-		let message = "";
-		if (e instanceof Error) {
-			message = e.stack || e.toString();
-		} else if (typeof(e) === "object" || Array.isArray(e)) {
-			message = JSON.stringify(e);
-		} else if (typeof(e) === "string") {
-			message = e;
-		} else {
-			message = `${e}`;
-		}
-
-		return message;
 	}
 
 	triggerSizeChange(value) {
