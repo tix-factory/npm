@@ -36,6 +36,11 @@ const parseConnectionString = (connectionString, options) => {
 };
 
 const verifyParameterType = (parameterValue, expectedParameterType) => {
+	if (parameterValue === null) {
+		// Everything likes nulls... right?
+		return true;
+	}
+
 	switch(typeof(parameterValue)) {
 		// TODO: More expectedParameterType validation
 		case "string":
