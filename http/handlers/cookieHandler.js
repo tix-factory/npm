@@ -8,36 +8,30 @@ export default class extends HttpHandler {
 		this._cookieSaver = cookieSaver;
 	}
 
-	execute(httpRequest) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const cookie = this._cookiejar.getCookies({
-					domain: httpRequest.url.hostname,
-					path: httpRequest.url.pathname
-				}).toValueString();
+	async execute(httpRequest) {
+		const cookie = this._cookiejar.getCookies({
+			domain: httpRequest.url.hostname,
+			path: httpRequest.url.pathname
+		}).toValueString();
 
-				if (cookie.length > 0) {
-					httpRequest.addOrUpdateHeader("Cookie", cookie);
-				}
+		if (cookie.length > 0) {
+			httpRequest.addOrUpdateHeader("Cookie", cookie);
+		}
 
-				const httpResponse = await super.execute(httpRequest);
+		const httpResponse = await super.execute(httpRequest);
 
-				let gotCookies = false;
-				httpResponse.headers.forEach((header) => {
-					if (header.name.toLowerCase() === "set-cookie") {
-						this._cookiejar.setCookie(header.value, httpRequest.url.hostname, httpRequest.url.pathname);
-						gotCookies = true;
-					}
-				});
-
-				if (gotCookies) {
-					this._cookieSaver(this._cookiejar);
-				}
-
-				resolve(httpResponse);
-			} catch (e) {
-				reject(e)
+		let gotCookies = false;
+		httpResponse.headers.forEach((header) => {
+			if (header.name.toLowerCase() === "set-cookie") {
+				this._cookiejar.setCookie(header.value, httpRequest.url.hostname, httpRequest.url.pathname);
+				gotCookies = true;
 			}
 		});
+
+		if (gotCookies) {
+			this._cookieSaver(this._cookiejar);
+		}
+
+		return Promise.resolve(httpResponse);
 	}
 };
