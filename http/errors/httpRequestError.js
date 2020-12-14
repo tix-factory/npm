@@ -1,6 +1,6 @@
 export default class extends Error {
-	constructor(httpRequest, httpResponse) {
-		super(`HttpRequest failed.`
+	constructor(httpRequest, httpResponse, message) {
+		super(`HttpRequest failed${(message ? `: ${message}` : ".")}`
 			+ `\n\tUrl: (${httpRequest.method?.toUpperCase()}) ${httpRequest.url}`
 			+ `\n\tStatus Code: ${httpResponse.statusCode}`);
 
