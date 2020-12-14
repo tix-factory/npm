@@ -37,4 +37,16 @@ export default class {
 
 		this.addHeader(name, value);
 	}
+
+	removeHeader(name) {
+		const lowerHeaderName = name.toLowerCase();
+
+		for (let i = this.headers.length - 1; i >= 0; i--) {
+			if (this.headers[i].name.toLowerCase() === lowerHeaderName) {
+				this.headers.splice(i, 1);
+			}
+		}
+
+		delete this.headerMap[lowerHeaderName];
+	}
 }
