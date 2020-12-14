@@ -37,17 +37,22 @@ export default class extends HttpHandler {
 	async execute(httpRequest) {
 		httpRequest.addOrUpdateHeader("Accept-Encoding", "gzip");
 
-		if (httpRequest.body) {
-			const requestContentEncoding = httpRequest.getHeader(contentEncodingHeader);
+		if (!httpRequest.bodyEncodingFinished) {
+			// To prevent double encoding
+			httpRequest.bodyEncodingFinished = true;
 
-			if (httpRequest.body.length >= minEncodedRequestBodyLength) {
-				switch (requestContentEncoding) {
-					case "gzip":
-						httpRequest.body = await gzip(httpRequest.body);
-						break;
+			if (httpRequest.body) {
+				const requestContentEncoding = httpRequest.getHeader(contentEncodingHeader);
+	
+				if (httpRequest.body.length >= minEncodedRequestBodyLength) {
+					switch (requestContentEncoding) {
+						case "gzip":
+							httpRequest.body = await gzip(httpRequest.body);
+							break;
+					}
+				} else if (requestContentEncoding) {
+					httpRequest.removeHeader(contentEncodingHeader);
 				}
-			} else if (requestContentEncoding) {
-				httpRequest.removeHeader(contentEncodingHeader);
 			}
 		}
 
