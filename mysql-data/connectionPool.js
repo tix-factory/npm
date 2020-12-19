@@ -19,7 +19,8 @@ const parseConnectionString = (connectionString, options) => {
 		host: connectionStringValues.server,
 		port: connectionStringValues.port,
 		timezone: "Z",
-		connectionLimit: options.maxConnections || 10
+		connectionLimit: options.maxConnections || 10,
+		charset: options.charset || "utf8mb4"
 	};
 
 	if (connectionStringValues.hasOwnProperty("database")) {
