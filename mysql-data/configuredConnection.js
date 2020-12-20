@@ -1,13 +1,13 @@
 import ConnectionPool from "./connectionPool.js";
 
 export default class {
-	constructor(configurationClient, logger, connectionStringSettingName, sslCertificateFileName) {
+	constructor(configurationClient, logger, connectionStringSettingName, connectionPoolOptions) {
 		this.connection = null;
 		this.connectionError = null;
 		this.configurationClient = configurationClient;
 		this.logger = logger;
 		this.connectionStringSettingName = connectionStringSettingName;
-		this.sslCertificateFileName = sslCertificateFileName;
+		this.connectionPoolOptions = connectionPoolOptions;
 		this.connectionQueue = [];
 		this.initConnection();
 	}
@@ -29,9 +29,7 @@ export default class {
 
 	initConnection() {
 		this.configurationClient.getSettingValue(this.connectionStringSettingName).then(connectionString => {
-			this.connection = new ConnectionPool(connectionString, {
-				sslCertificateFileName: this.sslCertificateFileName
-			});
+			this.connection = new ConnectionPool(connectionString, this.connectionPoolOptions);
 
 			this.connectionQueue.forEach(p => {
 				try {
