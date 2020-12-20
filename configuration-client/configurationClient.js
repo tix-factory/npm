@@ -12,7 +12,7 @@ export default class {
 		this.httpClient = httpClient;
 		this.logger = logger;
 		this.defaultValues = {};
-		this.getApplicationSettingsEndpoint = new URL(`${configurationServiceHost}/v1/GetApplicationSettings`);
+		this.configurationServiceHost = configurationServiceHost;
 		this.cache = null;
 		this.settingsExpiration = 0;
 
@@ -25,60 +25,71 @@ export default class {
 		}
 	}
 
-	getSettingValue(settingName) {
-		return new Promise((resolve, reject) => {
-			this.getApplicationSettings().then(settings => {
-				resolve(settings[settingName.toLowerCase()]);
-			}).catch(reject);
+	async getSettingValue(settingName) {
+		const settings = await this.getApplicationSettings();
+		return Promise.resolve(settings[settingName.toLowerCase()]);
+	}
+
+	setSettingValue(settingName, settingValue) {
+		return this.sendPostRequest("v1/SetApplicationSettingValue", {
+			settingName: settingName,
+			settingValue: settingValue
 		});
 	}
 
-	getApplicationSettings() {
-		return new Promise((resolve, reject) => {
-			const currentTime = +new Date;
-			if (this.cache) {
-				if (currentTime > this.settingsExpiration) {
-					this.settingsExpiration = currentTime + SettingsCacheExpiry;
-					this.loadApplicationSettings().then(settings => {
-						this.cache = settings;
-					}).catch(err => {
-						this.logger.warn(`Failed to refresh application settings\n`, err);
-					});
-				}
+	async getApplicationSettings() {
+		const currentTime = +new Date;
+		if (this.cache) {
+			if (currentTime > this.settingsExpiration) {
+				this.settingsExpiration = currentTime + SettingsCacheExpiry;
 
-				resolve(this.cache);
-			} else {
 				this.loadApplicationSettings().then(settings => {
 					this.cache = settings;
-					this.settingsExpiration = currentTime + SettingsCacheExpiry;
-					resolve(settings);
-				}).catch(reject);
+				}).catch(err => {
+					this.logger.warn(`Failed to refresh application settings\n`, err);
+				});
 			}
-		});
+
+			return Promise.resolve(this.cache);
+		} else {
+			const settings = await this.loadApplicationSettings();
+			this.cache = settings;
+			this.settingsExpiration = currentTime + SettingsCacheExpiry;
+
+			return Promise.resolve(settings);
+		}
 	}
 
-	loadApplicationSettings() {
-		return new Promise((resolve, reject) => {
-			const httpRequest = new HttpRequest(httpMethods.post, this.getApplicationSettingsEndpoint);
-			httpRequest.addOrUpdateHeader("Tix-Factory-Api-Key", process.env.ApplicationApiKey);
-			httpRequest.addOrUpdateHeader("Content-Type", "application/json");
-			httpRequest.body = Buffer.from("{}");
+	async loadApplicationSettings() {
+		try {
+			const responseBody = await this.sendPostRequest("v1/GetApplicationSettings", {});
+			const settings = Object.assign({}, this.defaultValues);
 
-			this.httpClient.send(httpRequest).then(httpResponse => {
-				if (httpResponse.statusCode === 200) {
-					const responseBody = JSON.parse(httpResponse.body.toString());
-					const settings = Object.assign({}, this.defaultValues);
+			for (let settingName in responseBody) {
+				settings[settingName.toLowerCase()] = responseBody[settingName];
+			}
 
-					for (let settingName in responseBody.data) {
-						settings[settingName.toLowerCase()] = responseBody.data[settingName];
-					}
+			return Promise.resolve(settings);
+		} catch (e) {
+			return Promise.reject(e);
+		}
+	}
 
-					resolve(settings);
-					return;
-				} else {
-					reject(new HttpRequestError(httpRequest, httpResponse));
-				}
-			}).catch(reject);
-		});
+	async sendPostRequest(path, requestBody) {
+		const httpRequest = new HttpRequest(httpMethods.post, new URL(`${this.configurationServiceHost}/${path}`));
+		httpRequest.addOrUpdateHeader("Tix-Factory-Api-Key", process.env.ApplicationApiKey);
+		httpRequest.addOrUpdateHeader("Content-Type", "application/json");
+		httpRequest.body = Buffer.from(JSON.stringify(requestBody));
+
+		const httpResponse = await this.httpClient.send(httpRequest);
+		switch (httpResponse.statusCode) {
+			case 200:
+				const responseBody = JSON.parse(httpResponse.body.toString());
+				return Promise.resolve(responseBody.data);
+			case 201:
+				return Promise.resolve();
+			default:
+				throw new HttpRequestError(httpRequest, httpResponse);
+		}
 	}
 };
