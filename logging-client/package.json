@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/tix-factory/npm/blob/main/logging-client",
   "dependencies": {
-    "@tix-factory/http": "file:../http"
+    "@tix-factory/http": "file:../http",
+    "@tix-factory/queueing": "file:../queueing"
   }
 }
