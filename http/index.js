@@ -8,6 +8,7 @@ import HttpHandler from "./handlers/httpHandler.js";
 import HttpRequestError from "./errors/httpRequestError.js";
 import HttpResponseError from "./errors/httpResponseError.js";
 import HttpClientError from "./errors/httpClientError.js";
+import SerializableCookieJar from "./serializableCookieJar.js";
 
 export {
 	httpMethods as httpMethods,
@@ -21,5 +22,7 @@ export {
 	
 	HttpRequestError as HttpRequestError,
 	HttpResponseError as HttpResponseError,
-	HttpClientError as HttpClientError
+	HttpClientError as HttpClientError,
+
+	SerializableCookieJar as SerializableCookieJar
 };
