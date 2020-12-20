@@ -134,7 +134,7 @@ export default class {
 				} else if (item.attempts < this.settings.maxAttempts) {
 					this.retry(item);
 				} else {
-					item.reject(new BatchError(BatchErrorCodes.maxAttempts, item, `Item not returned in batch processing result after max attempts.\n\tKey: ${this.createDeduplicationKey(item)}`));
+					item.reject(new BatchError(BatchErrorCodes.maxAttempts, item.item, `Item not returned in batch processing result after max attempts.\n\tKey: ${this.createDeduplicationKey(item.item)}`));
 				}
 			});
 
@@ -147,7 +147,7 @@ export default class {
 				if (item.attempts < this.settings.maxAttempts) {
 					this.retry(item);
 				} else {
-					const batchError = new BatchError(BatchErrorCodes.maxAttempts, item, `Item was caught in rejected batch processing result after max attempts.\n\tKey: ${this.createDeduplicationKey(item)}`);
+					const batchError = new BatchError(BatchErrorCodes.maxAttempts, item.item, `Item was caught in rejected batch processing result after max attempts.\n\tKey: ${this.createDeduplicationKey(item.item)}`);
 					batchError.innerError = error;
 
 					item.reject(batchError);

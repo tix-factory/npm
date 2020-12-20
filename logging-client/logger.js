@@ -1,6 +1,9 @@
-import { HttpRequest, httpMethods } from "@tix-factory/http";
+import { HttpRequest, httpMethods, HttpRequestError } from "@tix-factory/http";
+import { BatchItemProcessor } from "@tix-factory/queueing";
 import os from "os";
 import LogError from "./logError.js";
+import GenerateHash from "./generateHash.js";
+
 const schemeRegex = /^\w+:/;
 const whitespaceRegex = /\s+^/;
 
@@ -12,9 +15,16 @@ export default class {
 		}
 
 		this.httpClient = httpClient;
-		this.loggingServiceEndpoint = new URL(`${loggingServiceHost}/v1/Log`);
+		this.loggingServiceEndpoint = new URL(`${loggingServiceHost}/v1/BatchLog`);
 		this.hostName = os.hostname();
-		this.logName = logName
+		this.logName = logName;
+
+		this.batchLogProcessor = new BatchItemProcessor({
+			deduplicateItems: false,
+			minProcessDelay: 500
+		}, this.batchLog.bind(this), err => {
+			console.error("logger failed to log", err);
+		});
 	}
 
 	serialize(e) {
@@ -71,6 +81,7 @@ export default class {
 	writeAsync(logLevel, logPieces) {
 		return new Promise((resolve, reject) => {
 			const logData = {
+				id: GenerateHash(),
 				message: "",
 				host: {
 					name: this.hostName
@@ -89,19 +100,43 @@ export default class {
 
 				logData.message += whitespacePrepend + this.serialize(logPieces[i]);
 			}
-	
+
+			this.batchLogProcessor.push(logData).then(resolve).catch(reject);
+		});
+	}
+
+	async batchLog(logDataArray) {
+		try {
 			const httpRequest = new HttpRequest(httpMethods.post, this.loggingServiceEndpoint);
 			httpRequest.addOrUpdateHeader("Content-Type", "application/json");
-			httpRequest.body = Buffer.from(JSON.stringify(logData));
-	
-			this.httpClient.send(httpRequest).then((response) => {
-				if (response.statusCode === 200 || response.statusCode === 204) {
-					resolve();
-					return;
-				}
+			httpRequest.body = Buffer.from(JSON.stringify(logDataArray));
 
-				reject(new LogError(httpRequest, response, logData));
-			}).catch(reject);
-		});
+			const httpResponse = await this.httpClient.send(httpRequest);
+			if (httpResponse.statusCode === 200) {
+				const responseBody = JSON.parse(httpResponse.body.toString());
+				const logDataById = Object.fromEntries(logDataArray.map(l => [l.id, l]));
+				const logResult = [];
+
+				responseBody.successfulLogIds.forEach(id => {
+					logResult.push({
+						item: logDataById[id],
+						success: true
+					});
+				});
+
+				responseBody.failedLogIds.forEach(id => {
+					logResult.push({
+						item: logDataById[id],
+						reject: new LogError(httpRequest, httpResponse, logDataById[id])
+					});
+				});
+
+				return Promise.resolve(logResult);
+			} else {
+				return Promise.reject(new HttpRequestError(httpRequest, httpResponse));
+			}
+		} catch (e) {
+			return Promise.reject(e);
+		}
 	}
 };
