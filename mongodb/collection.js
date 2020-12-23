@@ -103,7 +103,7 @@ export default class {
 
 	deleteMany(query) {
 		return new Promise((resolve, reject) => {
-			this.collection.deleteOne(query, {
+			this.collection.deleteMany(query, {
 				writeConcern: "majority"
 			}, (err, result) => {
 				if (err) {
