@@ -1,0 +1,25 @@
+{
+	"name": "@tix-factory/mongodb",
+	"version": "2.0.0",
+	"description": "",
+	"main": "index.js",
+	"type": "module",
+	"scripts": {},
+	"repository": {
+	  "type": "git",
+	  "url": "git+https://github.com/tix-factory/npm.git"
+	},
+	"keywords": [
+	  "mongodb"
+	],
+	"author": "tix-factory",
+	"license": "MIT",
+	"bugs": {
+	  "url": "https://github.com/tix-factory/npm/issues"
+	},
+	"homepage": "https://github.com/tix-factory/npm/blob/main/mongodb",
+	"dependencies": {
+	  "mongodb": "^3.6.3"
+	}
+  }
+  
