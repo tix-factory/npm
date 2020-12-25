@@ -23,7 +23,7 @@ export default class extends HttpHandler {
 				if (location.startsWith("/")) {
 					httpRequest = new HttpRequest(httpMethods.get, new URL(location, `${httpRequest.url.protocol}//${httpRequest.url.host}:${httpRequest.url.port}`));
 				} else {
-					httpRequest = new HttpRequest(httpRequest.get, new URL(location));
+					httpRequest = new HttpRequest(httpMethods.get, new URL(location));
 				}
 
 				continue;
