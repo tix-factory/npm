@@ -71,10 +71,10 @@ export default class extends EventEmitter {
 							return;
 						}
 
+						queueItem.locked = false;
+
 						lastHeldSize = this._heldSize--;
 						this.triggerHeldSizeChange(lastHeldSize, this._heldSize);
-
-						queueItem.locked = false;
 					}, expiryInMilliseconds);
 
 					resolve({
