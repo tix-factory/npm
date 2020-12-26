@@ -283,10 +283,12 @@ export default class extends EventEmitter {
 		if (previousValue !== value) {
 			this._lastSize = value;
 
-			this.emit("sizeChanged", {
-				previousValue: previousValue,
-				value: value
-			});
+			setTimeout(() => {
+				this.emit("sizeChanged", {
+					previousValue: previousValue,
+					value: value
+				});
+			}, 0);
 		}
 	}
 
@@ -299,10 +301,12 @@ export default class extends EventEmitter {
 		if (previousValue !== value) {
 			this._lastHeldSize = value;
 
-			this.emit("heldSizeChanged", {
-				previousValue: previousValue,
-				value: value
-			});
+			setTimeout(() => {
+				this.emit("heldSizeChanged", {
+					previousValue: previousValue,
+					value: value
+				});
+			}, 0);
 		}
 	}
 };
