@@ -16,9 +16,9 @@ export default class {
 
 		this.options = options;
 		this.httpClient = new HttpClient(options.httpClientOptions || {
-			requestTimeout: 10 * 1000
+			requestTimeout: 30 * 1000
 		});
-		
+
 		this.logger = new Logger(this.httpClient, options.logName);
 		this.promClient = promClient;
 		this.authorizationHandler = new AuthorizationHandler(this.httpClient, this.logger);
