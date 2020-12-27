@@ -1,5 +1,6 @@
 import MongoDB from "mongodb";
 import Collection from "./collection.js";
+import IdGenerator from "./idGenerator.js";
 
 const connect = (connectionString) => {
 	return new Promise((resolve, reject) => {
@@ -14,8 +15,9 @@ const connect = (connectionString) => {
 };
 
 export default class {
-	constructor(connectionString) {
+	constructor(connectionString, idGenerator) {
 		this.connectionString = connectionString;
+		this.idGenerator = idGenerator || new IdGenerator();
 		this.connection = null;
 		this.databases = {};
 	}
@@ -42,7 +44,7 @@ export default class {
 	async getCollection(projectName, collectionName) {
 		try {
 			const database = await this.connect(projectName);
-			const collection = new Collection(database.collection(collectionName));
+			const collection = new Collection(database.collection(collectionName), this.idGenerator);
 
 			await collection.createIndex({
 				"id": 1

@@ -1,8 +1,7 @@
-import idGenerator from "./idGenerator.js";
-
 export default class {
-	constructor(collection) {
+	constructor(collection, idGenerator) {
 		this.collection = collection;
+		this.idGenerator = idGenerator;
 	}
 
 	createIndex(indexSpecification, options) {
@@ -30,14 +29,17 @@ export default class {
 	}
 
 	insert(row) {
-		const id = idGenerator.generate();
+		const id = this.idGenerator.generate();
 		const currentTime = new Date();
 
 		return new Promise((resolve, reject) => {
-			this.collection.insertOne(Object.assign(row, {
+			// To make sure id is always at the front... right?
+			this.collection.insertOne(Object.assign({
 				id: id,
-				updated: currentTime,
-				created: currentTime
+			}, row, {
+				id: id,
+				created: currentTime,
+				updated: currentTime
 			}), (err, result) => {
 				if (err) {
 					reject(err);
