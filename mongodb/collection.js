@@ -196,6 +196,8 @@ export default class {
 
 		if (this.options.collation && !options.hasOwnProperty("collation")) {
 			options.collation = this.options.collation;
+		} else if (!options.collation) {
+			delete options.collation;
 		}
 
 		return options;

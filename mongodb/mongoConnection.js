@@ -49,7 +49,10 @@ export default class {
 			await collection.createIndex({
 				"id": 1
 			}, {
-				unique: true
+				unique: true,
+
+				// collation doesn't matter, this is a number field
+				collation: undefined
 			});
 
 			return Promise.resolve(collection);
