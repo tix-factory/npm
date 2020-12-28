@@ -145,6 +145,10 @@ export default class {
 				if (err) {
 					reject(err);
 				} else {
+					if (result.value) {
+						result.value.id = result.value._id;
+					}
+
 					resolve(result.value);
 				}
 			});
