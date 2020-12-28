@@ -8,6 +8,25 @@ import FaviconOperation from "./operations/faviconOperation.js";
 import ApplicationMetadataOperation from "./operations/applicationMetadataOperation.js";
 import MetricsOperation from "./operations/metricsOperation.js";
 
+const filterRequestParameters = (operation, parameters) => {
+	if (!Array.isArray(operation.requestParameters)) {
+		return parameters;
+	}
+
+	const filteredParameters = {};
+	const lowerParameters = {};
+
+	for (let key in parameters) {
+		lowerParameters[key.toLowerCase()] = parameters[key];
+	}
+
+	operation.requestParameters.forEach(key => {
+		filteredParameters[key] = lowerParameters[key.toLowerCase()];
+	});
+
+	return filteredParameters;
+};
+
 export default class {
 	constructor(options) {
 		if (!options.port) {
@@ -81,7 +100,11 @@ export default class {
 			const apiKey = this.getApiKey(request);
 			const isAuthorized = await this.authorizationHandler.isAuthorized(apiKey, operation);
 			if (isAuthorized) {
-				const result = await operation.execute(operation.method === httpMethods.get ? request.params : request.body);
+				const requestParameters = filterRequestParameters(operation, operation.method === httpMethods.get ? request.params : request.body);
+				const result = await operation.execute(requestParameters, {
+					apiKey: apiKey
+				});
+
 				if (result === undefined) {
 					response.status(statusCode = 204);
 				} else {
