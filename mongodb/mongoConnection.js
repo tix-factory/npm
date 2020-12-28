@@ -41,15 +41,18 @@ export default class {
 		}
 	}
 
-	async getCollection(projectName, collectionName) {
+	async getCollection(projectName, collectionName, options) {
 		try {
 			const database = await this.connect(projectName);
-			const collection = new Collection(database.collection(collectionName), this.idGenerator);
+			const collection = new Collection(database.collection(collectionName), this.idGenerator, options);
 
 			await collection.createIndex({
 				"id": 1
 			}, {
-				unique: true
+				unique: true,
+
+				// collation doesn't matter, this is a number field
+				collation: undefined
 			});
 
 			return Promise.resolve(collection);
