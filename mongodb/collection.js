@@ -30,11 +30,12 @@ export default class {
 		});
 	}
 
-	count(filter, options) {
+	count(query, options) {
 		return new Promise((resolve, reject) => {
+			query = this.validateQuery(query);
 			options = this.validateOptions(options);
 
-			this.collection.count(filter, options, (err, count) => {
+			this.collection.count(query, options, (err, count) => {
 				if (err) {
 					reject(err);
 				} else {
@@ -51,9 +52,9 @@ export default class {
 		return new Promise((resolve, reject) => {
 			// To make sure id is always at the front... right?
 			this.collection.insertOne(Object.assign({
-				id: id,
+				_id: id,
 			}, row, {
-				id: id,
+				_id: id,
 				created: currentTime,
 				updated: currentTime
 			}), (err, result) => {
@@ -68,6 +69,7 @@ export default class {
 
 	find(query, options) {
 		return new Promise((resolve, reject) => {
+			query = this.validateQuery(query);
 			options = this.validateOptions(options);
 
 			this.collection.find(query, (err, cursor) => {
@@ -96,6 +98,10 @@ export default class {
 					}
 
 					cursor.toArray().then(documents => {
+						documents.forEach(e => {
+							e.id = e._id;
+						});
+
 						resolve(documents);
 					}).catch(reject);
 				}
@@ -105,12 +111,17 @@ export default class {
 
 	findOne(query, options) {
 		return new Promise((resolve, reject) => {
+			query = this.validateQuery(query);
 			options = this.validateOptions(options);
 
 			this.collection.findOne(query, options, (err, result) => {
 				if (err) {
 					reject(err);
 				} else {
+					if (result) {
+						result.id = result._id;
+					}
+
 					resolve(result);
 				}
 			});
@@ -119,6 +130,7 @@ export default class {
 
 	findOneAndUpdate(query, updateFields, options) {
 		return new Promise((resolve, reject) => {
+			query = this.validateQuery(query);
 			options = this.validateOptions(options);
 
 			// https://stackoverflow.com/a/35627439/1663648
@@ -141,6 +153,7 @@ export default class {
 
 	updateOne(query, updateFields, options) {
 		return new Promise((resolve, reject) => {
+			query = this.validateQuery(query);
 			options = this.validateOptions(options);
 			options.writeConcern = "majority";
 
@@ -161,6 +174,7 @@ export default class {
 
 	deleteOne(query, options) {
 		return new Promise((resolve, reject) => {
+			query = this.validateQuery(query);
 			options = this.validateOptions(options);
 			options.writeConcern = "majority";
 
@@ -176,6 +190,7 @@ export default class {
 
 	deleteMany(query, options) {
 		return new Promise((resolve, reject) => {
+			query = this.validateQuery(query);
 			options = this.validateOptions(options);
 			options.writeConcern = "majority";
 
@@ -187,6 +202,19 @@ export default class {
 				}
 			});
 		});
+	}
+
+	validateQuery(query) {
+		if (!query) {
+			query = {};
+		}
+
+		if (query.hasOwnProperty("id")) {
+			query._id = query.id;
+			delete query.id;
+		}
+
+		return query;
 	}
 
 	validateOptions(options) {
