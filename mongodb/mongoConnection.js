@@ -41,10 +41,10 @@ export default class {
 		}
 	}
 
-	async getCollection(projectName, collectionName) {
+	async getCollection(projectName, collectionName, options) {
 		try {
 			const database = await this.connect(projectName);
-			const collection = new Collection(database.collection(collectionName), this.idGenerator);
+			const collection = new Collection(database.collection(collectionName), this.idGenerator, options);
 
 			await collection.createIndex({
 				"id": 1

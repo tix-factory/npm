@@ -1,11 +1,25 @@
 export default class {
-	constructor(collection, idGenerator) {
+	constructor(collection, idGenerator, options) {
+		if (!options) {
+			options = {};
+		}
+
+		if (!options.hasOwnProperty("collation")) {
+			options.collation = {
+				locale: "en_US",
+				strength: 2
+			};
+		}
+
 		this.collection = collection;
 		this.idGenerator = idGenerator;
+		this.options = options;
 	}
 
 	createIndex(indexSpecification, options) {
 		return new Promise((resolve, reject) => {
+			options = this.validateOptions(options);
+
 			this.collection.createIndex(indexSpecification, options, (err, result) => {
 				if (err) {
 					reject(err);
@@ -16,9 +30,11 @@ export default class {
 		});
 	}
 
-	count(filter) {
+	count(filter, options) {
 		return new Promise((resolve, reject) => {
-			this.collection.count(filter, (err, count) => {
+			options = this.validateOptions(options);
+
+			this.collection.count(filter, options, (err, count) => {
 				if (err) {
 					reject(err);
 				} else {
@@ -50,17 +66,70 @@ export default class {
 		});
 	}
 
-	findOneAndUpdate(query, updateFields) {
+	find(query, options) {
 		return new Promise((resolve, reject) => {
+			options = this.validateOptions(options);
+
+			this.collection.find(query, (err, cursor) => {
+				if (err) {
+					reject(err);
+				} else {
+					if (options.hasOwnProperty("limit")) {
+						if (options.limit < 1) {
+							resolve([]);
+							return;
+						}
+
+						cursor.limit(options.limit);
+					}
+
+					if (options.skip && options.skip > 0) {
+						cursor.skip(options.skip);
+					}
+
+					if (options.sort) {
+						cursor.sort(options.sort);
+					}
+
+					if (options.collation) {
+						cursor.collation(options.collation);
+					}
+
+					cursor.toArray().then(documents => {
+						resolve(documents);
+					}).catch(reject);
+				}
+			});
+		});
+	}
+
+	findOne(query, options) {
+		return new Promise((resolve, reject) => {
+			options = this.validateOptions(options);
+
+			this.collection.findOne(query, options, (err, result) => {
+				if (err) {
+					reject(err);
+				} else {
+					resolve(result);
+				}
+			});
+		});
+	}
+
+	findOneAndUpdate(query, updateFields, options) {
+		return new Promise((resolve, reject) => {
+			options = this.validateOptions(options);
+
+			// https://stackoverflow.com/a/35627439/1663648
+			options.returnOriginal = false;
+
 			const currentTime = new Date();
 			this.collection.findOneAndUpdate(query, {
 				"$set": Object.assign(updateFields, {
 					updated: currentTime
 				})
-			}, {
-				// https://stackoverflow.com/a/35627439/1663648
-				returnOriginal: false
-			}, (err, result) => {
+			}, options, (err, result) => {
 				if (err) {
 					reject(err);
 				} else {
@@ -70,16 +139,17 @@ export default class {
 		});
 	}
 
-	updateOne(query, updateFields) {
+	updateOne(query, updateFields, options) {
 		return new Promise((resolve, reject) => {
+			options = this.validateOptions(options);
+			options.writeConcern = "majority";
+
 			const currentTime = new Date();
 			this.collection.updateOne(query, {
 				"$set": Object.assign(updateFields, {
 					updated: currentTime
 				})
-			}, {
-				writeConcern: "majority"
-			}, (err, result) => {
+			}, options, (err, result) => {
 				if (err) {
 					reject(err);
 				} else {
@@ -89,11 +159,12 @@ export default class {
 		});
 	}
 
-	deleteOne(query) {
+	deleteOne(query, options) {
 		return new Promise((resolve, reject) => {
-			this.collection.deleteOne(query, {
-				writeConcern: "majority"
-			}, (err, result) => {
+			options = this.validateOptions(options);
+			options.writeConcern = "majority";
+
+			this.collection.deleteOne(query, options, (err, result) => {
 				if (err) {
 					reject(err);
 				} else {
@@ -103,11 +174,12 @@ export default class {
 		});
 	}
 
-	deleteMany(query) {
+	deleteMany(query, options) {
 		return new Promise((resolve, reject) => {
-			this.collection.deleteMany(query, {
-				writeConcern: "majority"
-			}, (err, result) => {
+			options = this.validateOptions(options);
+			options.writeConcern = "majority";
+
+			this.collection.deleteMany(query, options, (err, result) => {
 				if (err) {
 					reject(err);
 				} else {
@@ -115,5 +187,17 @@ export default class {
 				}
 			});
 		});
+	}
+
+	validateOptions(options) {
+		if (!options) {
+			options = {};
+		}
+
+		if (this.options.collation && !options.hasOwnProperty("collation")) {
+			options.collation = this.options.collation;
+		}
+
+		return options;
 	}
 }
