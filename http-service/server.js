@@ -8,7 +8,7 @@ import FaviconOperation from "./operations/faviconOperation.js";
 import ApplicationMetadataOperation from "./operations/applicationMetadataOperation.js";
 import MetricsOperation from "./operations/metricsOperation.js";
 
-const filterRequestParameters = (parameters) => {
+const filterRequestParameters = (operation, parameters) => {
 	if (!Array.isArray(operation.requestParameters)) {
 		return parameters;
 	}
@@ -74,18 +74,6 @@ export default class {
 	}
 
 	registerOperation(operation) {
-		if (!operation.method) {
-			operation.method = httpMethods.post;
-		}
-
-		if (typeof(operation.allowAnonymous) !== "boolean") {
-			operation.allowAnonymous = false;
-		}
-
-		if (typeof(operation.route) !== "string") {
-			operation.route = `/v1/${operation.name}`;
-		}
-
 		switch (operation.method) {
 			case httpMethods.get:
 			case httpMethods.post:
@@ -112,7 +100,7 @@ export default class {
 			const apiKey = this.getApiKey(request);
 			const isAuthorized = await this.authorizationHandler.isAuthorized(apiKey, operation);
 			if (isAuthorized) {
-				const requestParameters = filterRequestParameters(operation.method === httpMethods.get ? request.params : request.body);
+				const requestParameters = filterRequestParameters(operation, operation.method === httpMethods.get ? request.params : request.body);
 				const result = await operation.execute(requestParameters, {
 					apiKey: apiKey
 				});
