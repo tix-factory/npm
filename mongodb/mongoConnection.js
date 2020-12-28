@@ -46,15 +46,6 @@ export default class {
 			const database = await this.connect(projectName);
 			const collection = new Collection(database.collection(collectionName), this.idGenerator, options);
 
-			await collection.createIndex({
-				"id": 1
-			}, {
-				unique: true,
-
-				// collation doesn't matter, this is a number field
-				collation: undefined
-			});
-
 			return Promise.resolve(collection);
 		} catch (e) {
 			return Promise.reject(e);
