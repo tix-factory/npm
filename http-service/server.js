@@ -21,7 +21,10 @@ const filterRequestParameters = (operation, parameters) => {
 	}
 
 	operation.requestParameters.forEach(key => {
-		filteredParameters[key] = lowerParameters[key.toLowerCase()];
+		const lowerKey = key.toLowerCase();
+		if (lowerParameters.hasOwnProperty(lowerKey)) {
+			filteredParameters[key] = lowerParameters[lowerKey];
+		}
 	});
 
 	return filteredParameters;
