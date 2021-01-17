@@ -12,6 +12,10 @@ export default class {
 			retryCooldownInMilliseconds: 500,
 			deduplicateItems: true,
 
+			// The max number of items that can be queued for batching at a single time.
+			// If the queue.length exceeds this, new pushes will be rejected.
+			maxQueueSize: Infinity,
+
 			// Wait at least 0 milliseconds before processing after an item has been pushed into the queue.
 			// * Only applicable if the queue size is below the batchSize.
 			processDelay: 0,
@@ -59,6 +63,11 @@ export default class {
 					batchProcessorItem.promise(resolve, reject);
 					return;
 				}
+			}
+
+			if (this.queue.length >= this.settings.maxQueueSize) {
+				reject(new BatchError(BatchErrorCodes.queueFull, item, `The batch item queue has exceeded the limit (limit: ${this.settings.maxQueueSize}, queue size: ${this.queue.length}).`));
+				return;
 			}
 
 			batchProcessorItem = new BatchProcessorItem(item, resolve, reject, this.handleError);

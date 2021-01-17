@@ -1,3 +1,4 @@
 export default {
-	maxAttempts: "maxAttempts"
+	maxAttempts: "maxAttempts",
+	queueFull: "queueFull"
 };
