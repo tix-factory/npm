@@ -103,7 +103,7 @@ export default class {
 			const apiKey = this.getApiKey(request);
 			const isAuthorized = await this.authorizationHandler.isAuthorized(apiKey, operation);
 			if (isAuthorized) {
-				const requestParameters = filterRequestParameters(operation, operation.method === httpMethods.get ? request.params : request.body);
+				const requestParameters = filterRequestParameters(operation, operation.method === httpMethods.get ? Object.assign(Object.assign({}, request.query), request.params) : request.body);
 				const result = await operation.execute(requestParameters, {
 					apiKey: apiKey
 				});
